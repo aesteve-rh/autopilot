@@ -1,0 +1,112 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Autopilot Workflow Schema",
+    "type": "object",
+    "required": ["steps"],
+    "properties": {
+      "steps": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["name", "actions"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Step name"
+            },
+            "actions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["message", "command"],
+                    "description": "Action type: message or command"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Message text (required for message actions)"
+                  },
+                  "style": {
+                    "type": "object",
+                    "properties": {
+                      "color": {
+                        "type": "string",
+                        "enum": ["red", "green", "yellow", "blue", "cyan", "magenta", "white"],
+                        "description": "Text color"
+                      },
+                      "bold": {
+                        "type": "boolean",
+                        "description": "Bold text style"
+                      },
+                      "italic": {
+                        "type": "boolean",
+                        "description": "Italic text style"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "speed": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Typing speed in milliseconds per character"
+                  },
+                  "command": {
+                    "type": "string",
+                    "description": "Shell command to execute (required for command actions)"
+                  },
+                  "hide_output": {
+                    "type": "boolean",
+                    "description": "Hide command output"
+                  },
+                  "remote": {
+                    "type": "object",
+                    "properties": {
+                      "host": {
+                        "type": "string",
+                        "description": "Remote SSH host"
+                      },
+                      "port": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65535,
+                        "description": "SSH port (default 22)"
+                      }
+                    },
+                    "required": ["host"],
+                    "additionalProperties": false
+                  },
+                  "loop": {
+                    "type": "object",
+                    "properties": {
+                      "times": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Number of iterations"
+                      },
+                      "delay": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Delay between iterations in milliseconds"
+                      }
+                    },
+                    "required": ["times"],
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false,
+                "anyOf": [
+                  { "required": ["text"] },
+                  { "required": ["command"] }
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "additionalProperties": false
+  }

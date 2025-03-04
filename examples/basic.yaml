@@ -1,0 +1,40 @@
+steps:
+  - name: "How to use Autopilot"
+    actions:
+      - type: "message"
+        text: |
+          Never make a typo again!
+             let the computer type for you
+             or run programs
+        style:
+          color: "green"
+          bold: true
+
+      - type: "command"
+        command: "echo 'Supports hidden output'"
+        hide_output: true
+      
+      - type: "message"
+        text: |
+          Script complex demos without missing one argument
+             or forgetting important steps
+             in the right order
+        style:
+          color: "red"
+          italic: true
+
+      - type: "command"
+        command: "ls -lh"
+
+      - type: "message"
+        text: "Run commands, as many times as you need, both locally and remotely"
+        style:
+          color: "cyan"
+          bold: true
+
+      - type: "command"
+        command: "echo 'Good Bye (two times)!'"
+        loop:
+          times: 2
+          delay: 1000
+
