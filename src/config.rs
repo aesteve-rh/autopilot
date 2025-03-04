@@ -86,6 +86,8 @@ pub struct RemoteConfig {
     pub host: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub port: Option<u16>,
+    pub user: String,
+    pub password: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

@@ -28,6 +28,7 @@ steps:
 
       - type: "message"
         text: "Run commands, as many times as you need, both locally and remotely"
+        speed: 25
         style:
           color: "cyan"
           bold: true

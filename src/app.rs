@@ -1,32 +1,29 @@
 use crate::config::{self, LoopConfig, RemoteConfig, StyleConfig};
 use anyhow::{Context, Result};
-use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
-    buffer::Buffer,
-    layout::Rect,
-    style::{Style, Styled, Stylize},
-    symbols::border,
+    style::{Style, Styled},
     text::Line,
-    widgets::{Block, Paragraph, Widget},
-    DefaultTerminal, Frame,
 };
 use std::{
-    io,
+    error, io,
     process::Command,
     sync::{Arc, Mutex},
     thread,
     time::Duration,
-    sync::mpsc::{self, Sender, Receiver},
 };
 
+/// Application result type.
+pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
+
 #[derive(Clone, Debug)]
-struct BufferedOutput {
+pub struct BufferedOutput {
     text: String,
     style: StyleConfig,
 }
 
 impl<'a> BufferedOutput {
-    fn into_lines(self) -> Vec<Line<'a>> {
+    pub fn into_lines(self) -> Vec<Line<'a>> {
         self.text
             .clone()
             .lines()
@@ -37,104 +34,46 @@ impl<'a> BufferedOutput {
 
 #[derive(Debug)]
 pub struct App {
+    /// Is the application running?
+    pub running: bool,
     config: config::Config,
-    exit: bool,
-    event_rx: Receiver<Event>,
-    event_tx: Sender<Event>,
-    buffer: Arc<Mutex<Vec<BufferedOutput>>>,
+    pub buffer: Arc<Mutex<Vec<BufferedOutput>>>,
     step_idx: usize,
     action_idx: usize,
+    action_run: Arc<Mutex<bool>>,
     finished: bool,
 }
 
-impl Widget for &App {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        let title = Line::from(" AutoPilot ".bold());
-        let instructions = Line::from(vec![
-            " Next ".into(),
-            "<Left>".blue().bold(),
-            " Prev ".into(),
-            "<Right>".blue().bold(),
-            " Quit ".into(),
-            "<Q> ".blue().bold(),
-        ]);
-        let block = Block::bordered()
-            .title(title.centered())
-            .title_bottom(instructions.centered())
-            .border_set(border::THICK);
-
-        let counter_text: Vec<Line<'_>> = self
-            .buffer
-            .lock()
-            .unwrap()
-            .iter()
-            .map(|t| {
-                let mut res = t.clone().into_lines();
-                res.push(Line::default());
-                res
-            })
-            .flatten()
-            .collect();
-
-        Paragraph::new(counter_text).block(block).render(area, buf);
-    }
-}
-
 impl App {
-    pub fn new() -> Self {
-        let (event_tx, event_rx) = mpsc::channel();
-        Self {
-            config: config::Config::default(),
-            exit: false,
-            event_rx,
-            event_tx,
+    pub fn new(config: config::Config) -> Self {
+        let app = Self {
+            running: true,
+            config,
             buffer: Arc::new(Mutex::new(Vec::new())),
             step_idx: 0,
             action_idx: 0,
+            action_run: Arc::new(Mutex::new(false)),
             finished: false,
-        }
-    }
-
-    /// runs the application's main loop until the user quits
-    pub fn run(
-        &mut self,
-        terminal: &mut DefaultTerminal,
-        config: config::Config,
-    ) -> io::Result<()> {
-        self.config = config;
-        self.buffer.lock().unwrap().push(BufferedOutput {
-            text: format!(" ### {} ###", self.config.steps[self.step_idx].name.clone()).into(),
+        };
+        app.buffer.lock().unwrap().push(BufferedOutput {
+            text: format!(" ### {} ###", app.config.steps[app.step_idx].name.clone()).into(),
             style: StyleConfig::title(),
         });
-
-        while !self.exit {
-            terminal.draw(|frame| self.draw(frame))?;
-            self.handle_events()?;
-        }
-        Ok(())
-    }
-
-    fn draw(&self, frame: &mut Frame) {
-        frame.render_widget(self, frame.area());
+        app
     }
 
     /// updates the application's state based on user input
-    fn handle_events(&mut self) -> io::Result<()> {
-        match event::read().unwrap() {
-            // it's important to check that the event is a key press event as
-            // crossterm also emits key release and repeat events on Windows.
-            Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                match key_event.code {
-                    KeyCode::Char('q') => self.exit(),
-                    KeyCode::Left => todo!("No previous action"),
-                    KeyCode::Right => self.next_action(),
-                    _ => {}
-                }
-            }
+    pub fn handle_events(&mut self, key_event: KeyEvent) -> io::Result<()> {
+        Ok(match key_event.code {
+            KeyCode::Char('q') => self.exit(),
+            KeyCode::Left => todo!("No previous action"),
+            KeyCode::Right => self.next_action(),
             _ => {}
-        };
-        Ok(())
+        })
     }
+
+    /// Handles the tick event of the terminal.
+    pub fn tick(&self) {}
 
     fn next_action_idx(&mut self) {
         if self.finished {
@@ -154,16 +93,12 @@ impl App {
     }
 
     fn next_action(&mut self) {
-        if self.finished {
+        if self.finished || *self.action_run.lock().unwrap() {
             return;
         }
         match self.config.steps[self.step_idx].actions[self.action_idx].clone() {
-            config::Action::Message {
-                text,
-                style,
-                speed: _,
-            } => {
-                self.write_buf(format!(" > {}", text.clone()), style);
+            config::Action::Message { text, style, speed } => {
+                self.write_message(text, style, speed);
             }
             config::Action::Command {
                 command,
@@ -175,6 +110,20 @@ impl App {
             }
         };
         self.next_action_idx();
+    }
+
+    fn write_message(&mut self, text: String, style: Option<StyleConfig>, speed: Option<u64>) {
+        let running = self.action_run.clone();
+        *running.lock().unwrap() = true;
+        self.write_buf(String::from(" > "), style);
+        let buffer = self.buffer.clone();
+        thread::spawn(move || {
+            for c in text.chars() {
+                buffer.lock().unwrap().last_mut().unwrap().text.push(c);
+                thread::sleep(Duration::from_millis(speed.unwrap_or(50)));
+            }
+            *running.lock().unwrap() = false;
+        });
     }
 
     fn run_command(
@@ -197,6 +146,8 @@ impl App {
             delay = loop_config.delay;
         }
 
+        let running = self.action_run.clone();
+        *running.lock().unwrap() = true;
         self.write_buf(format!(" $ {}", command), None);
         let buffer = self.buffer.clone();
         thread::spawn(move || {
@@ -216,6 +167,7 @@ impl App {
                     thread::sleep(Duration::from_millis(delay));
                 }
             }
+            *running.lock().unwrap() = false;
         });
 
         Ok(())
@@ -232,6 +184,6 @@ impl App {
     }
 
     fn exit(&mut self) {
-        self.exit = true;
+        self.running = false;
     }
 }
