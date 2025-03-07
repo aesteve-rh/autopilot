@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Albert Esteve <aesteve@redhat.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 mod app;
 mod config;
 mod event;

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Albert Esteve <aesteve@redhat.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 use crate::config::{self, LoopConfig, RemoteConfig, StyleConfig};
 use anyhow::{Context, Result};
 use crossterm::event::{KeyCode, KeyEvent};

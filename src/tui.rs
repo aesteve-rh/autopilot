@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Albert Esteve <aesteve@redhat.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::backend::Backend;

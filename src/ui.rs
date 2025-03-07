@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Albert Esteve <aesteve@redhat.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 use ratatui::{
     prelude::Margin,
     style::{Color, Style, Stylize},

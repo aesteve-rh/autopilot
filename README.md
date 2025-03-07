@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 Albert Esteve <aesteve@redhat.com>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # AutoPilot
 
 Automate workflows with ease - messages, commands, loops, remote execution,
