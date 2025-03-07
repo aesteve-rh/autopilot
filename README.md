@@ -62,6 +62,10 @@ stages:
 autopilot my_tasks.yaml
 ```
 
+# Output
+
+![](demo.gif)
+
 # Inspiration
 
 This project has been heavily inspired by [nohands](https://github.com/nirs/nohands).
