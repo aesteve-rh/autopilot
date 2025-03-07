@@ -72,5 +72,3 @@ includes a modern user interface to show the demos.
 # Contribute
 
 PRs welcome! Feel free to open issues for new features.
-
-Would you like me to generate the initial GitHub project structure and LICENSE for your project?
