@@ -239,14 +239,24 @@ impl App {
 
                 let output = output.unwrap();
                 if !hide && !output.stdout.is_empty() {
-                    let output = String::from_utf8_lossy(&output.stdout);
+                    let stdout = String::from_utf8_lossy(&output.stdout);
                     buffer
                         .lock()
                         .unwrap()
                         .last_mut()
                         .unwrap()
                         .text
-                        .push_str(&output);
+                        .push_str(&stdout);
+                }
+                if !output.stderr.is_empty() {
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    buffer
+                        .lock()
+                        .unwrap()
+                        .last_mut()
+                        .unwrap()
+                        .text
+                        .push_str(&stderr);
                 }
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));
@@ -297,16 +307,27 @@ impl App {
                 let mut channel = sess.channel_session().unwrap();
                 channel.exec(cmd.as_str()).unwrap();
 
-                let mut output = String::new();
-                channel.read_to_string(&mut output).unwrap();
-                if !hide && !output.is_empty() {
+                let mut stdout = String::new();
+                channel.read_to_string(&mut stdout).unwrap();
+                if !hide && !stdout.is_empty() {
                     buffer
                         .lock()
                         .unwrap()
                         .last_mut()
                         .unwrap()
                         .text
-                        .push_str(&output);
+                        .push_str(&stdout);
+                }
+                let mut stderr = String::new();
+                channel.stderr().read_to_string(&mut stderr).unwrap();
+                if !stderr.is_empty() {
+                    buffer
+                        .lock()
+                        .unwrap()
+                        .last_mut()
+                        .unwrap()
+                        .text
+                        .push_str(&stderr);
                 }
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));
