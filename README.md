@@ -11,11 +11,12 @@ and styled terminal output.
 - Loops with configurable delay
 - Hide command output for silent execution
 - YAML-based, human-friendly configuration
+- Beautiful display in a terminal user interface (TUI)
 
 # Installation
 
 ```terminal
-git clone https://github.com/username/autopilot.git
+git clone https://github.com/aesteve-rh/autopilot.git
 cd autopilot
 cargo build --release
 ```
@@ -25,7 +26,7 @@ cargo build --release
 - Create a YAML file like this:
 
 ```yaml
-steps:
+stages:
   - name: "Deploy App"
     actions:
       - type: "message"
@@ -54,6 +55,13 @@ steps:
 ```console
 autopilot my_tasks.yaml
 ```
+
+# Inspiration
+
+This project has been heavily inspired by [nohands](https://github.com/nirs/nohands).
+
+Its purpose and behaviour is similar. But `autopilot` supports more features and
+includes a modern user interface to show the demos.
 
 # Contribute
 

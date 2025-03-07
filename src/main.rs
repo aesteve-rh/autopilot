@@ -4,18 +4,26 @@ mod event;
 mod tui;
 mod ui;
 
+use clap::Parser;
+use ratatui::{backend::CrosstermBackend, Terminal};
+use std::{io, path::PathBuf};
+
 use crate::{
     app::{App, AppResult},
     event::{Event, EventHandler},
     tui::Tui,
 };
-use ratatui::{backend::CrosstermBackend, Terminal};
-use std::{io, path::Path};
+
+#[derive(Parser)]
+struct Cli {
+    config_path: PathBuf,
+}
 
 #[tokio::main]
 async fn main() -> AppResult<()> {
-    let config = config::Config::load_config(Path::new("./examples/basic.yaml"))
-        .expect("Parsing configuration failed");
+    let args = Cli::parse();
+    let config =
+        config::Config::load_config(&args.config_path).expect("Parsing configuration failed");
     // Create an application.
     let mut app = App::new(config);
 

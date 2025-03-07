@@ -22,6 +22,7 @@ impl StyleConfig {
     pub fn title() -> Self {
         let mut title = StyleConfig::default();
         title.bold = Some(true);
+        title.color = Some(String::from("white"));
         title
     }
 }
@@ -55,7 +56,7 @@ impl Into<Style> for StyleConfig {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Step {
+pub struct Stage {
     pub name: String,
     pub actions: Vec<Action>,
 }
@@ -86,7 +87,9 @@ pub struct RemoteConfig {
     pub host: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub port: Option<u16>,
-    pub user: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub password: Option<String>,
 }
 
@@ -98,7 +101,7 @@ pub struct LoopConfig {
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Config {
-    pub steps: Vec<Step>,
+    pub stages: Vec<Stage>,
 }
 
 impl Config {
@@ -111,8 +114,7 @@ impl Config {
         let json_value =
             serde_json::to_value(config).context("Failed to convert YAML to JSON 2")?;
         if let Err(err) = jsonschema::validate(&schema_json, &json_value) {
-            println!("Validation failed: {}", err);
-            anyhow::bail!("Schema validation failed");
+            anyhow::bail!("Schema validation failed: {}", err);
         }
 
         Ok(())

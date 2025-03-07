@@ -2,9 +2,9 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "Autopilot Workflow Schema",
     "type": "object",
-    "required": ["steps"],
+    "required": ["stages"],
     "properties": {
-      "steps": {
+      "stages": {
         "type": "array",
         "items": {
           "type": "object",
@@ -12,7 +12,7 @@
           "properties": {
             "name": {
               "type": "string",
-              "description": "Step name"
+              "description": "Stage name"
             },
             "actions": {
               "type": "array",
@@ -73,6 +73,14 @@
                         "minimum": 1,
                         "maximum": 65535,
                         "description": "SSH port (default 22)"
+                      },
+                      "user": {
+                        "type": "string",
+                        "description": "Remote SSH user"
+                      },
+                      "password": {
+                        "type": "string",
+                        "description": "Remote SSH password. Can use '$env:' prefix to mark value as environment variable"
                       }
                     },
                     "required": ["host"],

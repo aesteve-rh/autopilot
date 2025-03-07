@@ -1,34 +1,33 @@
-steps:
+stages:
   - name: "How to use Autopilot"
     actions:
       - type: "message"
         text: |
           Never make a typo again!
-             let the computer type for you
-             or run programs
+            Let autopilot type eveything for you
+            or run programs
         style:
-          color: "green"
+          color: "red"
           bold: true
 
-      - type: "command"
-        command: "echo 'Supports hidden output'"
-        hide_output: true
-      
       - type: "message"
         text: |
           Script complex demos without missing one argument
-             or forgetting important steps
-             in the right order
+            or forgetting important steps
         style:
-          color: "red"
+          color: "green"
           italic: true
 
       - type: "command"
-        command: "ls -lh"
+        command: "echo 'Commands support hidden output'"
+        hide_output: true
+
+      - type: "command"
+        command: "head -4 README.md"
 
       - type: "message"
         text: "Run commands, as many times as you need, both locally and remotely"
-        speed: 25
+        speed: 0
         style:
           color: "cyan"
           bold: true
@@ -39,3 +38,15 @@ steps:
           times: 2
           delay: 1000
 
+  - name: "Working on a remote host"
+    actions:
+      - type: "message"
+        text: "You can also run commands on remote hosts (with SSH)"
+
+      - type: "command"
+        command: "hostnamectl"
+        remote:
+          host: localhost
+          port: 2222
+          user: admin
+          password: $env:REMOTE_PASSWORD

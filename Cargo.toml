@@ -1,5 +1,5 @@
 [package]
-name = "autodemo"
+name = "autopilot"
 version = "0.1.0"
 edition = "2021"
 
@@ -16,3 +16,6 @@ serde_yaml2 = "0.1.2"
 tokio = { version = "1.43.0", features = ["full"] }
 futures = "0.3.31"
 tokio-macros = "2.5.0"
+ssh2 = "0.9"
+clap = { version = "4.0", features = ["derive"] }
+whoami = "1.5.2"
