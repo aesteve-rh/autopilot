@@ -60,6 +60,10 @@
                       "type": "string"
                     }
                   },
+                  "sudo": {
+                    "type": "boolean",
+                    "description": "Run command with sudo (currently supported for remote only)"
+                  },
                   "hide_output": {
                     "type": "boolean",
                     "description": "Hide command output"

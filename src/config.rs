@@ -100,6 +100,8 @@ pub enum Action {
     Command {
         command: CommandType,
         #[serde(skip_serializing_if = "Option::is_none")]
+        sudo: Option<bool>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         hide_output: Option<bool>,
         #[serde(skip_serializing_if = "Option::is_none")]
         remote: Option<RemoteConfig>,

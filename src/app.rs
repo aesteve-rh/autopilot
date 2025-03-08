@@ -170,6 +170,7 @@ impl App {
             }
             config::Action::Command {
                 command,
+                sudo,
                 hide_output,
                 remote,
                 r#loop,
@@ -178,6 +179,7 @@ impl App {
                     self.run_remote_command(
                         &command,
                         remote.unwrap(),
+                        sudo.unwrap_or(false),
                         hide_output.unwrap_or(false),
                         r#loop,
                     )
@@ -285,15 +287,23 @@ impl App {
         &mut self,
         command: &CommandType,
         remote: RemoteConfig,
+        sudo: bool,
         hide: bool,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
         fn run_single(
             cmd: String,
             session: Session,
+            password: String,
+            sudo: bool,
             hide: bool,
             buffer: Arc<Mutex<Vec<BufferedOutput>>>,
         ) {
+            let cmd = if sudo {
+                format!("echo {} | sudo -kS {}", password, cmd)
+            } else {
+                cmd
+            };
             let mut channel = session.channel_session().unwrap();
             channel.exec(cmd.as_str()).unwrap();
 
@@ -351,11 +361,25 @@ impl App {
             for repetition in 0..times {
                 match cmd {
                     CommandType::Single(ref cmd) => {
-                        run_single(cmd.clone(), sess.clone(), hide, buffer.clone());
+                        run_single(
+                            cmd.clone(),
+                            sess.clone(),
+                            password.clone(),
+                            sudo,
+                            hide,
+                            buffer.clone(),
+                        );
                     }
                     CommandType::Multiple(ref cmds) => {
                         for cmd in cmds {
-                            run_single(cmd.clone(), sess.clone(), hide, buffer.clone());
+                            run_single(
+                                cmd.clone(),
+                                sess.clone(),
+                                password.clone(),
+                                sudo,
+                                hide,
+                                buffer.clone(),
+                            );
                         }
                     }
                 }
