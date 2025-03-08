@@ -35,26 +35,31 @@ cargo build --release
 stages:
   - name: "Deploy App"
     actions:
-      - type: "message"
+      - type: message
         text: "Starting Deployment..."
         style:
-          color: "cyan"
+          color: cyan
           bold: true
         speed: 50
 
-      - type: "command"
+      - type: command
         command: "echo 'Deploying services...'"
         hide_output: false
 
-      - type: "command"
-        command: "restart-service.sh"
+      - type: command
+        command:
+          - restart-service.sh
+          - echo 'Service restarted'
         remote:
-          host: "user@server.com"
+          user: user
+          host: server.com
           port: 22
         loop:
           times: 3
           delay: 2000
 ```
+
+**NOTE:** You can see all configuration options documented at [docs/config.md](docs/config.md).
 
 - Run It
 
