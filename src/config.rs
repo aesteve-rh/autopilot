@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use anyhow::{Context, Result};
+use core::fmt;
 use jsonschema;
 use ratatui::style::{Color, Modifier, Style};
 use serde::{Deserialize, Serialize};
@@ -65,6 +66,27 @@ pub struct Stage {
     pub actions: Vec<Action>,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum CommandType {
+    Single(String),
+    Multiple(Vec<String>),
+}
+
+impl fmt::Debug for CommandType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Single(ref cmd) => {
+                write!(f, "{}", cmd)
+            }
+            Self::Multiple(ref cmds) => {
+                let out: String = cmds.into_iter().map(|cmd| format!("{}; ", cmd)).collect();
+                write!(f, "{}", out)
+            }
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum Action {
@@ -76,7 +98,7 @@ pub enum Action {
         speed: Option<u64>,
     },
     Command {
-        command: String,
+        command: CommandType,
         #[serde(skip_serializing_if = "Option::is_none")]
         hide_output: Option<bool>,
         #[serde(skip_serializing_if = "Option::is_none")]

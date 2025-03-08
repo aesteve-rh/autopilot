@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::config::{self, LoopConfig, RemoteConfig, StyleConfig};
+use crate::config::{self, CommandType, LoopConfig, RemoteConfig, StyleConfig};
 use anyhow::{Context, Result};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
@@ -212,10 +212,41 @@ impl App {
 
     fn run_command(
         &mut self,
-        command: &String,
+        command: &CommandType,
         hide: bool,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
+        fn run_single(cmd: String, hide: bool, buffer: Arc<Mutex<Vec<BufferedOutput>>>) {
+            let output = Command::new("sh")
+                .arg("-c")
+                .arg(cmd.clone())
+                .output()
+                .context("Failed to execute command");
+
+            let output = output.unwrap();
+            if !hide && !output.stdout.is_empty() {
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                buffer
+                    .lock()
+                    .unwrap()
+                    .last_mut()
+                    .unwrap()
+                    .text
+                    .push_str(&stdout);
+            }
+            if !output.stderr.is_empty() {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                buffer
+                    .lock()
+                    .unwrap()
+                    .last_mut()
+                    .unwrap()
+                    .text
+                    .push_str(&stderr);
+            }
+        }
+
+        self.write_buf(format!("$ {:?}\n", command), None);
         let cmd = command.clone();
         let mut times = 1;
         let mut delay = 0;
@@ -227,36 +258,18 @@ impl App {
 
         let running = self.action_status.clone();
         *running.lock().unwrap() = ActionStatus::Running;
-        self.write_buf(format!("$ {}\n", command), None);
         let buffer = self.buffer.clone();
         thread::spawn(move || {
             for repetition in 0..times {
-                let output = Command::new("sh")
-                    .arg("-c")
-                    .arg(cmd.clone())
-                    .output()
-                    .context("Failed to execute command");
-
-                let output = output.unwrap();
-                if !hide && !output.stdout.is_empty() {
-                    let stdout = String::from_utf8_lossy(&output.stdout);
-                    buffer
-                        .lock()
-                        .unwrap()
-                        .last_mut()
-                        .unwrap()
-                        .text
-                        .push_str(&stdout);
-                }
-                if !output.stderr.is_empty() {
-                    let stderr = String::from_utf8_lossy(&output.stderr);
-                    buffer
-                        .lock()
-                        .unwrap()
-                        .last_mut()
-                        .unwrap()
-                        .text
-                        .push_str(&stderr);
+                match cmd {
+                    CommandType::Single(ref cmd) => {
+                        run_single(cmd.clone(), hide, buffer.clone());
+                    }
+                    CommandType::Multiple(ref cmds) => {
+                        for cmd in cmds {
+                            run_single(cmd.clone(), hide, buffer.clone());
+                        }
+                    }
                 }
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));
@@ -270,13 +283,45 @@ impl App {
 
     fn run_remote_command(
         &mut self,
-        command: &String,
+        command: &CommandType,
         remote: RemoteConfig,
         hide: bool,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
+        fn run_single(
+            cmd: String,
+            session: Session,
+            hide: bool,
+            buffer: Arc<Mutex<Vec<BufferedOutput>>>,
+        ) {
+            let mut channel = session.channel_session().unwrap();
+            channel.exec(cmd.as_str()).unwrap();
+
+            let mut stdout = String::new();
+            channel.read_to_string(&mut stdout).unwrap();
+            if !hide && !stdout.is_empty() {
+                buffer
+                    .lock()
+                    .unwrap()
+                    .last_mut()
+                    .unwrap()
+                    .text
+                    .push_str(&stdout);
+            }
+            let mut stderr = String::new();
+            channel.stderr().read_to_string(&mut stderr).unwrap();
+            if !stderr.is_empty() {
+                buffer
+                    .lock()
+                    .unwrap()
+                    .last_mut()
+                    .unwrap()
+                    .text
+                    .push_str(&stderr);
+            }
+        }
         let addr = format!("{}:{}", remote.host, remote.port.unwrap_or(22));
-        self.write_buf(format!("[{}]$ {}\n", addr, command), None);
+        self.write_buf(format!("[{}]$ {:?}\n", addr, command), None);
 
         let cmd = command.clone();
         let mut times = 1;
@@ -304,30 +349,15 @@ impl App {
                 return;
             }
             for repetition in 0..times {
-                let mut channel = sess.channel_session().unwrap();
-                channel.exec(cmd.as_str()).unwrap();
-
-                let mut stdout = String::new();
-                channel.read_to_string(&mut stdout).unwrap();
-                if !hide && !stdout.is_empty() {
-                    buffer
-                        .lock()
-                        .unwrap()
-                        .last_mut()
-                        .unwrap()
-                        .text
-                        .push_str(&stdout);
-                }
-                let mut stderr = String::new();
-                channel.stderr().read_to_string(&mut stderr).unwrap();
-                if !stderr.is_empty() {
-                    buffer
-                        .lock()
-                        .unwrap()
-                        .last_mut()
-                        .unwrap()
-                        .text
-                        .push_str(&stderr);
+                match cmd {
+                    CommandType::Single(ref cmd) => {
+                        run_single(cmd.clone(), sess.clone(), hide, buffer.clone());
+                    }
+                    CommandType::Multiple(ref cmds) => {
+                        for cmd in cmds {
+                            run_single(cmd.clone(), sess.clone(), hide, buffer.clone());
+                        }
+                    }
                 }
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));

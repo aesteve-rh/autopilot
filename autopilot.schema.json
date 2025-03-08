@@ -54,8 +54,11 @@
                     "description": "Typing speed in milliseconds per character"
                   },
                   "command": {
-                    "type": "string",
-                    "description": "Shell command to execute (required for command actions)"
+                    "type": ["string", "array"],
+                    "description": "Shell command to execute (required for command actions)",
+                    "items": {
+                      "type": "string"
+                    }
                   },
                   "hide_output": {
                     "type": "boolean",
