@@ -6,8 +6,8 @@ use crate::config::{self, CommandType, LoopConfig, RemoteConfig, StyleConfig};
 use anyhow::{Context, Result};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
-    style::{Style, Styled},
-    text::Line,
+    style::{Color, Style, Styled},
+    text::{Line, Span},
 };
 use ssh2::Session;
 use std::{
@@ -48,6 +48,19 @@ enum ActionStatus {
     Stopped,
 }
 
+impl ActionStatus {
+    fn status(&self) -> Span<'static> {
+        match self {
+            ActionStatus::Running | ActionStatus::Forced => {
+                Span::styled(" ◄ Running ▶ ", Style::default().fg(Color::LightGreen))
+            }
+            ActionStatus::Stopped => {
+                Span::styled(" ■ Stopped ■ ", Style::default().fg(Color::LightRed))
+            }
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct App {
     /// Is the application running?
@@ -75,6 +88,13 @@ impl App {
         };
         app.write_title();
         app
+    }
+
+    pub fn status(&self) -> Span<'static> {
+        if self.finished {
+            return Span::styled(" [ Finished ] ", Style::default().fg(Color::LightYellow));
+        }
+        self.action_status.lock().unwrap().status()
     }
 
     fn write_title(&mut self) {

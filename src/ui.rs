@@ -6,7 +6,7 @@ use ratatui::{
     prelude::Margin,
     style::{Color, Style, Stylize},
     symbols::border,
-    text::Line,
+    text::{Line, Span},
     widgets::{Block, Padding, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState},
     Frame,
 };
@@ -27,13 +27,17 @@ fn render_text(app: &App) -> Vec<Line<'_>> {
         .collect()
 }
 
-fn render_block() -> ratatui::widgets::Block<'static> {
+fn render_block(app_status: Span<'static>) -> ratatui::widgets::Block<'static> {
     let title = Line::from(" AutoPilot ".bold());
     let instructions = Line::from(vec![
+        app_status.into(),
+        "━━━━━━━━━━━━━━".into(),
         " Next ".into(),
         "<Left>".blue().bold(),
         " Prev ".into(),
         "<Right>".blue().bold(),
+        " Scroll ".into(),
+        "<Up/Down>".blue().bold(),
         " Quit ".into(),
         "<Q> ".blue().bold(),
     ]);
@@ -61,7 +65,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     };
     frame.render_widget(
         Paragraph::new(text)
-            .block(render_block())
+            .block(render_block(app.status()))
             .style(Style::default().fg(Color::Gray).bg(Color::Black))
             .scroll((vertical_scroll, 0)),
         area,
