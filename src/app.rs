@@ -138,16 +138,16 @@ impl App {
         if self.finished {
             return;
         }
+        self.action_idx += 1;
+
         let stage = &self.config.stages[self.stage_idx];
-        if stage.actions.len() == self.action_idx + 1 {
+        if stage.actions.len() == self.action_idx {
             if self.config.stages.len() == self.stage_idx + 1 {
                 self.finished = true;
             } else {
                 self.stage_idx += 1;
                 self.action_idx = 0;
             }
-        } else {
-            self.action_idx += 1;
         }
     }
 
@@ -433,6 +433,9 @@ impl App {
     }
 
     fn exit(&mut self) {
+        if *self.action_status.lock().unwrap() != ActionStatus::Stopped {
+            return;
+        }
         self.running = false;
     }
 }
