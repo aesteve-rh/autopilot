@@ -318,7 +318,7 @@ impl App {
             buffer: Arc<Mutex<Vec<BufferedOutput>>>,
         ) {
             let cmd = if sudo {
-                format!("echo {} | sudo -kS {}", password, cmd)
+                format!("echo {} | sudo -kS -p '' {}", password, cmd)
             } else {
                 cmd
             };
