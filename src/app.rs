@@ -195,16 +195,16 @@ impl App {
                 remote,
                 r#loop,
             } => {
-                if remote.is_some() {
+                if let Some(remote_config) = remote {
                     self.run_remote_command(
                         &command,
-                        remote.unwrap(),
+                        remote_config,
                         sudo.unwrap_or(false),
                         hide_output.unwrap_or(false),
                         r#loop,
                     )
                 } else {
-                    self.run_command(&command, hide_output.unwrap_or(false), r#loop)
+                    self.run_local_command(&command, hide_output.unwrap_or(false), r#loop)
                 }?;
             }
         };
@@ -232,7 +232,7 @@ impl App {
         });
     }
 
-    fn run_command(
+    fn run_local_command(
         &mut self,
         command: &CommandType,
         hide: bool,
@@ -270,13 +270,11 @@ impl App {
 
         self.write_buf(format!("$ {:?}\n", command), None);
         let cmd = command.clone();
-        let mut times = 1;
-        let mut delay = 0;
-
-        if let Some(loop_config) = loop_config {
-            times = loop_config.times;
-            delay = loop_config.delay;
-        }
+        let (times, delay) = if let Some(loop_config) = loop_config {
+            (loop_config.times, loop_config.delay)
+        } else {
+            (1, 0)
+        };
 
         let running = self.action_status.clone();
         *running.lock().unwrap() = ActionStatus::Running;
@@ -354,28 +352,26 @@ impl App {
         self.write_buf(format!("[{}]$ {:?}\n", addr, command), None);
 
         let cmd = command.clone();
-        let mut times = 1;
-        let mut delay = 0;
-
-        if let Some(loop_config) = loop_config {
-            times = loop_config.times;
-            delay = loop_config.delay;
-        }
+        let (times, delay) = if let Some(loop_config) = loop_config {
+            (loop_config.times, loop_config.delay)
+        } else {
+            (1, 0)
+        };
 
         let running = self.action_status.clone();
         *running.lock().unwrap() = ActionStatus::Running;
         let buffer = self.buffer.clone();
         thread::spawn(move || {
             let tcp = TcpStream::connect(addr).unwrap();
-            let mut sess = Session::new().unwrap();
-            sess.set_tcp_stream(tcp);
-            sess.handshake().unwrap();
+            let mut session = Session::new().unwrap();
+            session.set_tcp_stream(tcp);
+            session.handshake().unwrap();
 
             let user = Self::resolve_env(&remote.user.unwrap_or(whoami::username())).unwrap();
             let password = Self::resolve_env(&remote.password.unwrap_or(String::new())).unwrap();
-            sess.userauth_password(&user, &password).unwrap();
+            session.userauth_password(&user, &password).unwrap();
 
-            if !sess.authenticated() {
+            if !session.authenticated() {
                 return;
             }
             for repetition in 0..times {
@@ -383,7 +379,7 @@ impl App {
                     CommandType::Single(ref cmd) => {
                         run_single(
                             cmd.clone(),
-                            sess.clone(),
+                            session.clone(),
                             password.clone(),
                             sudo,
                             hide,
@@ -394,7 +390,7 @@ impl App {
                         for cmd in cmds {
                             run_single(
                                 cmd.clone(),
-                                sess.clone(),
+                                session.clone(),
                                 password.clone(),
                                 sudo,
                                 hide,
