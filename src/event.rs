@@ -76,7 +76,7 @@ impl EventHandler {
                       },
                     }
                   }
-                };
+                }
             }
         });
         Self {
