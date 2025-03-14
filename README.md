@@ -9,11 +9,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
 Automate workflows with ease - messages, commands, loops, remote execution,
 and styled terminal output.
 
-
 # Features
-- Sequential task execution
-- Styled messages with colors, styles, and configurable speed
-- Command execution with local or remote (SSH) support
+- Sequential tasks execution with back and forth support
+- Styled messages with colors, styles, and configurable display speed
+- Commands:
+  - Local or remote (via `ssh`) execution
+  - Run as regular or privileged user
+  - Support list of commands
 - Loops with configurable delay
 - Hide command output for silent execution
 - YAML-based, human-friendly configuration
@@ -21,15 +23,36 @@ and styled terminal output.
 
 # Installation
 
-```terminal
+## Prerequisites
+
+### Install Rust
+
+```shell
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+### Install packages
+```shell
+sudo dnf install -y gcc openssl-devel
+```
+
+## Clone the project
+```shell
 git clone https://github.com/aesteve-rh/autopilot.git
 cd autopilot
+```
+
+## Build
+
+```shell
 cargo build --release
 ```
 
 # Usage
 
-- Create a YAML file like this:
+## Create workflow
+
+Create a YAML file like this:
 
 ```yaml
 stages:
@@ -50,6 +73,7 @@ stages:
         command:
           - restart-service.sh
           - echo 'Service restarted'
+        sudo: true
         remote:
           user: user
           host: server.com
@@ -61,13 +85,13 @@ stages:
 
 **NOTE:** You can see all configuration options documented at [docs/config.md](docs/config.md).
 
-- Run It
+## Run
 
 ```console
 autopilot my_tasks.yaml
 ```
 
-# Output
+## Output
 
 ![](demo.gif)
 
