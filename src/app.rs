@@ -348,8 +348,11 @@ impl App {
                     .push_str(&stderr);
             }
         }
+
+        let user = Self::resolve_env(&remote.user.unwrap_or(whoami::username())).unwrap();
+        let username = if sudo { "root" } else { user.as_str() };
         let addr = format!("{}:{}", remote.host, remote.port.unwrap_or(22));
-        self.write_buf(format!("[{}]$ {:?}\n", addr, command), None);
+        self.write_buf(format!("[{}@{}]$ {:?}\n", username, addr, command), None);
 
         let cmd = command.clone();
         let (times, delay) = if let Some(loop_config) = loop_config {
@@ -367,7 +370,6 @@ impl App {
             session.set_tcp_stream(tcp);
             session.handshake().unwrap();
 
-            let user = Self::resolve_env(&remote.user.unwrap_or(whoami::username())).unwrap();
             let password = Self::resolve_env(&remote.password.unwrap_or(String::new())).unwrap();
             session.userauth_password(&user, &password).unwrap();
 
