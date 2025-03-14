@@ -27,7 +27,7 @@ fn render_text(app: &App) -> Vec<Line<'_>> {
         .collect()
 }
 
-fn render_block(app_status: Span<'static>) -> ratatui::widgets::Block<'static> {
+fn render_block(app_status: Span<'static>) -> Block<'static> {
     let title = Line::from(" AutoPilot ".bold());
     let instructions = Line::from(vec![
         app_status.into(),

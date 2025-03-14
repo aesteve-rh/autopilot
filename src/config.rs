@@ -74,7 +74,7 @@ pub enum CommandType {
 }
 
 impl fmt::Debug for CommandType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Single(ref cmd) => {
                 write!(f, "{}", cmd)

@@ -37,24 +37,24 @@ SPDX-License-Identifier: GPL-3.0-or-later
 **Title:** Autopilot Workflow Schema
 
 |                           |             |
-| ------------------------- | ----------- |
+|---------------------------|-------------|
 | **Type**                  | `object`    |
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
 | Property             | Pattern | Type            | Deprecated | Definition | Title/Description |
-| -------------------- | ------- | --------------- | ---------- | ---------- | ----------------- |
+|----------------------|---------|-----------------|------------|------------|-------------------|
 | + [stages](#stages ) | No      | array of object | No         | -          | -                 |
 
 ## <a name="stages"></a>1. Property `Autopilot Workflow Schema > stages`
 
 |              |                   |
-| ------------ | ----------------- |
+|--------------|-------------------|
 | **Type**     | `array of object` |
 | **Required** | Yes               |
 
 |                      | Array restrictions |
-| -------------------- | ------------------ |
+|----------------------|--------------------|
 | **Min items**        | N/A                |
 | **Max items**        | N/A                |
 | **Items unicity**    | False              |
@@ -62,26 +62,26 @@ SPDX-License-Identifier: GPL-3.0-or-later
 | **Tuple validation** | See below          |
 
 | Each item of this array must be | Description |
-| ------------------------------- | ----------- |
+|---------------------------------|-------------|
 | [stages items](#stages_items)   | -           |
 
 ### <a name="stages_items"></a>1.1. Autopilot Workflow Schema > stages > stages items
 
 |                           |             |
-| ------------------------- | ----------- |
+|---------------------------|-------------|
 | **Type**                  | `object`    |
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
 | Property                            | Pattern | Type            | Deprecated | Definition | Title/Description |
-| ----------------------------------- | ------- | --------------- | ---------- | ---------- | ----------------- |
+|-------------------------------------|---------|-----------------|------------|------------|-------------------|
 | + [name](#stages_items_name )       | No      | string          | No         | -          | Stage name        |
 | + [actions](#stages_items_actions ) | No      | array of object | No         | -          | -                 |
 
 #### <a name="stages_items_name"></a>1.1.1. Property `Autopilot Workflow Schema > stages > stages items > name`
 
 |              |          |
-| ------------ | -------- |
+|--------------|----------|
 | **Type**     | `string` |
 | **Required** | Yes      |
 
@@ -90,12 +90,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
 #### <a name="stages_items_actions"></a>1.1.2. Property `Autopilot Workflow Schema > stages > stages items > actions`
 
 |              |                   |
-| ------------ | ----------------- |
+|--------------|-------------------|
 | **Type**     | `array of object` |
 | **Required** | Yes               |
 
 |                      | Array restrictions |
-| -------------------- | ------------------ |
+|----------------------|--------------------|
 | **Min items**        | N/A                |
 | **Max items**        | N/A                |
 | **Items unicity**    | False              |
@@ -103,19 +103,19 @@ SPDX-License-Identifier: GPL-3.0-or-later
 | **Tuple validation** | See below          |
 
 | Each item of this array must be              | Description |
-| -------------------------------------------- | ----------- |
+|----------------------------------------------|-------------|
 | [actions items](#stages_items_actions_items) | -           |
 
 ##### <a name="stages_items_actions_items"></a>1.1.2.1. Autopilot Workflow Schema > stages > stages items > actions > actions items
 
 |                           |             |
-| ------------------------- | ----------- |
+|---------------------------|-------------|
 | **Type**                  | `combining` |
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
 | Property                                                  | Pattern | Type                      | Deprecated | Definition | Title/Description                                           |
-| --------------------------------------------------------- | ------- | ------------------------- | ---------- | ---------- | ----------------------------------------------------------- |
+|-----------------------------------------------------------|---------|---------------------------|------------|------------|-------------------------------------------------------------|
 | + [type](#stages_items_actions_items_type )               | No      | enum (of string)          | No         | -          | Action type: message or command                             |
 | - [text](#stages_items_actions_items_text )               | No      | string                    | No         | -          | Message text (required for message actions)                 |
 | - [style](#stages_items_actions_items_style )             | No      | object                    | No         | -          | -                                                           |
@@ -127,14 +127,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
 | - [loop](#stages_items_actions_items_loop )               | No      | object                    | No         | -          | -                                                           |
 
 | Any of(Option)                                 |
-| ---------------------------------------------- |
+|------------------------------------------------|
 | [item 0](#stages_items_actions_items_anyOf_i0) |
 | [item 1](#stages_items_actions_items_anyOf_i1) |
 
 ###### <a name="stages_items_actions_items_anyOf_i0"></a>1.1.2.1.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > anyOf > item 0`
 
 |                           |                  |
-| ------------------------- | ---------------- |
+|---------------------------|------------------|
 | **Type**                  | `object`         |
 | **Required**              | No               |
 | **Additional properties** | Any type allowed |
@@ -145,7 +145,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ###### <a name="stages_items_actions_items_anyOf_i1"></a>1.1.2.1.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > anyOf > item 1`
 
 |                           |                  |
-| ------------------------- | ---------------- |
+|---------------------------|------------------|
 | **Type**                  | `object`         |
 | **Required**              | No               |
 | **Additional properties** | Any type allowed |
@@ -156,7 +156,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ###### <a name="stages_items_actions_items_type"></a>1.1.2.1.3. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > type`
 
 |              |                    |
-| ------------ | ------------------ |
+|--------------|--------------------|
 | **Type**     | `enum (of string)` |
 | **Required** | Yes                |
 
@@ -169,7 +169,7 @@ Must be one of:
 ###### <a name="stages_items_actions_items_text"></a>1.1.2.1.4. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > text`
 
 |              |          |
-| ------------ | -------- |
+|--------------|----------|
 | **Type**     | `string` |
 | **Required** | No       |
 
@@ -178,13 +178,13 @@ Must be one of:
 ###### <a name="stages_items_actions_items_style"></a>1.1.2.1.5. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > style`
 
 |                           |             |
-| ------------------------- | ----------- |
+|---------------------------|-------------|
 | **Type**                  | `object`    |
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
 | Property                                              | Pattern | Type             | Deprecated | Definition | Title/Description |
-| ----------------------------------------------------- | ------- | ---------------- | ---------- | ---------- | ----------------- |
+|-------------------------------------------------------|---------|------------------|------------|------------|-------------------|
 | - [color](#stages_items_actions_items_style_color )   | No      | enum (of string) | No         | -          | Text color        |
 | - [bold](#stages_items_actions_items_style_bold )     | No      | boolean          | No         | -          | Bold text style   |
 | - [italic](#stages_items_actions_items_style_italic ) | No      | boolean          | No         | -          | Italic text style |
@@ -192,7 +192,7 @@ Must be one of:
 ###### <a name="stages_items_actions_items_style_color"></a>1.1.2.1.5.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > style > color`
 
 |              |                    |
-| ------------ | ------------------ |
+|--------------|--------------------|
 | **Type**     | `enum (of string)` |
 | **Required** | No                 |
 
@@ -210,7 +210,7 @@ Must be one of:
 ###### <a name="stages_items_actions_items_style_bold"></a>1.1.2.1.5.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > style > bold`
 
 |              |           |
-| ------------ | --------- |
+|--------------|-----------|
 | **Type**     | `boolean` |
 | **Required** | No        |
 
@@ -219,7 +219,7 @@ Must be one of:
 ###### <a name="stages_items_actions_items_style_italic"></a>1.1.2.1.5.3. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > style > italic`
 
 |              |           |
-| ------------ | --------- |
+|--------------|-----------|
 | **Type**     | `boolean` |
 | **Required** | No        |
 
@@ -228,20 +228,20 @@ Must be one of:
 ###### <a name="stages_items_actions_items_speed"></a>1.1.2.1.6. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > speed`
 
 |              |           |
-| ------------ | --------- |
+|--------------|-----------|
 | **Type**     | `integer` |
 | **Required** | No        |
 
 **Description:** Typing speed in milliseconds per character
 
 | Restrictions |        |
-| ------------ | ------ |
+|--------------|--------|
 | **Minimum**  | &ge; 0 |
 
 ###### <a name="stages_items_actions_items_command"></a>1.1.2.1.7. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > command`
 
 |              |                             |
-| ------------ | --------------------------- |
+|--------------|-----------------------------|
 | **Type**     | `string or array of string` |
 | **Required** | No                          |
 
@@ -250,7 +250,7 @@ Must be one of:
 ###### <a name="stages_items_actions_items_sudo"></a>1.1.2.1.8. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo`
 
 |              |           |
-| ------------ | --------- |
+|--------------|-----------|
 | **Type**     | `boolean` |
 | **Required** | No        |
 
@@ -259,7 +259,7 @@ Must be one of:
 ###### <a name="stages_items_actions_items_hide_output"></a>1.1.2.1.9. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_output`
 
 |              |           |
-| ------------ | --------- |
+|--------------|-----------|
 | **Type**     | `boolean` |
 | **Required** | No        |
 
@@ -268,22 +268,22 @@ Must be one of:
 ###### <a name="stages_items_actions_items_remote"></a>1.1.2.1.10. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote`
 
 |                           |             |
-| ------------------------- | ----------- |
+|---------------------------|-------------|
 | **Type**                  | `object`    |
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
-| Property                                                   | Pattern | Type    | Deprecated | Definition | Title/Description                                                                 |
-| ---------------------------------------------------------- | ------- | ------- | ---------- | ---------- | --------------------------------------------------------------------------------- |
-| + [host](#stages_items_actions_items_remote_host )         | No      | string  | No         | -          | Remote SSH host                                                                   |
-| - [port](#stages_items_actions_items_remote_port )         | No      | integer | No         | -          | SSH port (default 22)                                                             |
-| - [user](#stages_items_actions_items_remote_user )         | No      | string  | No         | -          | Remote SSH user                                                                   |
-| - [password](#stages_items_actions_items_remote_password ) | No      | string  | No         | -          | Remote SSH password. Can use '$env:' prefix to mark value as environment variable |
+| Property                                                  | Pattern | Type    | Deprecated | Definition | Title/Description                                                                 |
+|-----------------------------------------------------------|---------|---------|------------|------------|-----------------------------------------------------------------------------------|
+| + [host](#stages_items_actions_items_remote_host)         | No      | string  | No         | -          | Remote SSH host                                                                   |
+| - [port](#stages_items_actions_items_remote_port)         | No      | integer | No         | -          | SSH port (default 22)                                                             |
+| - [user](#stages_items_actions_items_remote_user)         | No      | string  | No         | -          | Remote SSH user                                                                   |
+| - [password](#stages_items_actions_items_remote_password) | No      | string  | No         | -          | Remote SSH password. Can use `$env:` prefix to mark value as environment variable |
 
 ###### <a name="stages_items_actions_items_remote_host"></a>1.1.2.1.10.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > host`
 
 |              |          |
-| ------------ | -------- |
+|--------------|----------|
 | **Type**     | `string` |
 | **Required** | Yes      |
 
@@ -292,21 +292,21 @@ Must be one of:
 ###### <a name="stages_items_actions_items_remote_port"></a>1.1.2.1.10.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > port`
 
 |              |           |
-| ------------ | --------- |
+|--------------|-----------|
 | **Type**     | `integer` |
 | **Required** | No        |
 
 **Description:** SSH port (default 22)
 
 | Restrictions |            |
-| ------------ | ---------- |
+|--------------|------------|
 | **Minimum**  | &ge; 1     |
 | **Maximum**  | &le; 65535 |
 
 ###### <a name="stages_items_actions_items_remote_user"></a>1.1.2.1.10.3. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > user`
 
 |              |          |
-| ------------ | -------- |
+|--------------|----------|
 | **Type**     | `string` |
 | **Required** | No       |
 
@@ -315,7 +315,7 @@ Must be one of:
 ###### <a name="stages_items_actions_items_remote_password"></a>1.1.2.1.10.4. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > password`
 
 |              |          |
-| ------------ | -------- |
+|--------------|----------|
 | **Type**     | `string` |
 | **Required** | No       |
 
@@ -324,40 +324,40 @@ Must be one of:
 ###### <a name="stages_items_actions_items_loop"></a>1.1.2.1.11. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop`
 
 |                           |             |
-| ------------------------- | ----------- |
+|---------------------------|-------------|
 | **Type**                  | `object`    |
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
 | Property                                           | Pattern | Type    | Deprecated | Definition | Title/Description                        |
-| -------------------------------------------------- | ------- | ------- | ---------- | ---------- | ---------------------------------------- |
+|----------------------------------------------------|---------|---------|------------|------------|------------------------------------------|
 | + [times](#stages_items_actions_items_loop_times ) | No      | integer | No         | -          | Number of iterations                     |
 | - [delay](#stages_items_actions_items_loop_delay ) | No      | integer | No         | -          | Delay between iterations in milliseconds |
 
 ###### <a name="stages_items_actions_items_loop_times"></a>1.1.2.1.11.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > times`
 
 |              |           |
-| ------------ | --------- |
+|--------------|-----------|
 | **Type**     | `integer` |
 | **Required** | Yes       |
 
 **Description:** Number of iterations
 
 | Restrictions |        |
-| ------------ | ------ |
+|--------------|--------|
 | **Minimum**  | &ge; 1 |
 
 ###### <a name="stages_items_actions_items_loop_delay"></a>1.1.2.1.11.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > delay`
 
 |              |           |
-| ------------ | --------- |
+|--------------|-----------|
 | **Type**     | `integer` |
 | **Required** | No        |
 
 **Description:** Delay between iterations in milliseconds
 
 | Restrictions |        |
-| ------------ | ------ |
+|--------------|--------|
 | **Minimum**  | &ge; 0 |
 
 ----------------------------------------------------------------------------------------------------------------------------
