@@ -171,9 +171,6 @@ impl App {
     }
 
     fn next_action(&mut self) -> io::Result<()> {
-        if self.finished && *self.action_status.lock().unwrap() == ActionStatus::Forced {
-            return Ok(());
-        }
         if *self.action_status.lock().unwrap() == ActionStatus::Running {
             *self.action_status.lock().unwrap() = ActionStatus::Forced;
             return Ok(());
