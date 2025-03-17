@@ -59,6 +59,10 @@ impl ActionStatus {
             }
         }
     }
+
+    pub fn force_stop(&self) -> bool {
+        *self == ActionStatus::Forced
+    }
 }
 
 #[derive(Debug)]
@@ -91,7 +95,7 @@ impl App {
     }
 
     pub fn status(&self) -> Span<'static> {
-        if self.finished {
+        if self.finished && *self.action_status.lock().unwrap() != ActionStatus::Running {
             return Span::styled(" [ Finished ] ", Style::default().fg(Color::LightYellow));
         }
         self.action_status.lock().unwrap().status()
@@ -217,10 +221,10 @@ impl App {
         let buffer = self.buffer.clone();
         thread::spawn(move || {
             for (idx, c) in text.chars().enumerate() {
-                if *running.lock().unwrap() == ActionStatus::Forced {
+                if running.lock().unwrap().force_stop() {
+                    // Print the rest of the string all at once.
                     buffer.lock().unwrap().last_mut().unwrap().text += &text[idx..text.len()];
-                    *running.lock().unwrap() = ActionStatus::Stopped;
-                    return;
+                    break;
                 }
                 buffer.lock().unwrap().last_mut().unwrap().text.push(c);
                 thread::sleep(Duration::from_millis(speed.unwrap_or(50)));
@@ -278,6 +282,10 @@ impl App {
         let buffer = self.buffer.clone();
         thread::spawn(move || {
             for repetition in 0..times {
+                if running.lock().unwrap().force_stop() {
+                    // Command interrupted!
+                    break;
+                }
                 match cmd {
                     CommandType::Single(ref cmd) => {
                         run_single(cmd.clone(), hide, buffer.clone());
@@ -374,6 +382,10 @@ impl App {
                 return;
             }
             for repetition in 0..times {
+                if running.lock().unwrap().force_stop() {
+                    // Command interrupted!
+                    break;
+                }
                 match cmd {
                     CommandType::Single(ref cmd) => {
                         run_single(
@@ -428,9 +440,6 @@ impl App {
     }
 
     fn exit(&mut self) {
-        if *self.action_status.lock().unwrap() != ActionStatus::Stopped {
-            return;
-        }
         self.running = false;
     }
 }
