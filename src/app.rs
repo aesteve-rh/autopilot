@@ -49,17 +49,6 @@ enum ActionStatus {
 }
 
 impl ActionStatus {
-    fn status(&self) -> Span<'static> {
-        match self {
-            ActionStatus::Running | ActionStatus::Forced => {
-                Span::styled(" ◄ Running ▶ ", Style::default().fg(Color::LightGreen))
-            }
-            ActionStatus::Stopped => {
-                Span::styled(" ■ Stopped ■ ", Style::default().fg(Color::LightRed))
-            }
-        }
-    }
-
     pub fn force_stop(&self) -> bool {
         *self == ActionStatus::Forced
     }
@@ -95,10 +84,20 @@ impl App {
     }
 
     pub fn status(&self) -> Span<'static> {
-        if self.finished && *self.action_status.lock().unwrap() != ActionStatus::Running {
-            return Span::styled(" [ Finished ] ", Style::default().fg(Color::LightYellow));
+        match *self.action_status.lock().unwrap() {
+            ActionStatus::Forced | ActionStatus::Stopped if self.finished => {
+                Span::styled(" [ Finished ] ", Style::default().fg(Color::LightYellow))
+            }
+            ActionStatus::Running => {
+                Span::styled(" ◄ Running... ▶ ", Style::default().fg(Color::LightGreen))
+            }
+            ActionStatus::Forced => {
+                Span::styled(" ■ Stopping... ■ ", Style::default().fg(Color::Red))
+            }
+            ActionStatus::Stopped => {
+                Span::styled(" ■ Stopped ■ ", Style::default().fg(Color::LightRed))
+            }
         }
-        self.action_status.lock().unwrap().status()
     }
 
     fn write_title(&mut self) {
@@ -223,7 +222,7 @@ impl App {
             for (idx, c) in text.chars().enumerate() {
                 if running.lock().unwrap().force_stop() {
                     // Print the rest of the string all at once.
-                    buffer.lock().unwrap().last_mut().unwrap().text += &text[idx..text.len()];
+                    Self::add_to_buf(buffer, &text[idx..text.len()]);
                     break;
                 }
                 buffer.lock().unwrap().last_mut().unwrap().text.push(c);
@@ -247,26 +246,10 @@ impl App {
                 .context("Failed to execute command");
 
             let output = output.unwrap();
-            if !hide && !output.stdout.is_empty() {
-                let stdout = String::from_utf8_lossy(&output.stdout);
-                buffer
-                    .lock()
-                    .unwrap()
-                    .last_mut()
-                    .unwrap()
-                    .text
-                    .push_str(&stdout);
+            if !hide {
+                App::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stdout));
             }
-            if !output.stderr.is_empty() {
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                buffer
-                    .lock()
-                    .unwrap()
-                    .last_mut()
-                    .unwrap()
-                    .text
-                    .push_str(&stderr);
-            }
+            App::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stderr));
         }
 
         self.write_buf(format!("$ {:?}\n", command), None);
@@ -283,7 +266,7 @@ impl App {
         thread::spawn(move || {
             for repetition in 0..times {
                 if running.lock().unwrap().force_stop() {
-                    // Command interrupted!
+                    Self::add_to_buf(buffer, "Command interrupted!\n");
                     break;
                 }
                 match cmd {
@@ -332,26 +315,12 @@ impl App {
 
             let mut stdout = String::new();
             channel.read_to_string(&mut stdout).unwrap();
-            if !hide && !stdout.is_empty() {
-                buffer
-                    .lock()
-                    .unwrap()
-                    .last_mut()
-                    .unwrap()
-                    .text
-                    .push_str(&stdout);
+            if !hide {
+                App::add_to_buf(buffer.clone(), &stdout);
             }
             let mut stderr = String::new();
             channel.stderr().read_to_string(&mut stderr).unwrap();
-            if !stderr.is_empty() {
-                buffer
-                    .lock()
-                    .unwrap()
-                    .last_mut()
-                    .unwrap()
-                    .text
-                    .push_str(&stderr);
-            }
+            App::add_to_buf(buffer.clone(), &stderr);
         }
 
         let user = Self::resolve_env(&remote.user.unwrap_or(whoami::username())).unwrap();
@@ -383,7 +352,7 @@ impl App {
             }
             for repetition in 0..times {
                 if running.lock().unwrap().force_stop() {
-                    // Command interrupted!
+                    Self::add_to_buf(buffer, "Command interrupted!\n");
                     break;
                 }
                 match cmd {
@@ -423,11 +392,20 @@ impl App {
     fn write_buf(&mut self, text: String, style: Option<StyleConfig>) {
         self.buffer.lock().unwrap().push(BufferedOutput {
             text,
-            style: match style {
-                Some(s) => s.clone(),
-                None => StyleConfig::default(),
-            },
+            style: style.unwrap_or_else(|| StyleConfig::default()),
         });
+    }
+
+    fn add_to_buf(buffer: Arc<Mutex<Vec<BufferedOutput>>>, output: &str) {
+        if !output.is_empty() {
+            buffer
+                .lock()
+                .unwrap()
+                .last_mut()
+                .unwrap()
+                .text
+                .push_str(&output);
+        }
     }
 
     fn resolve_env(value: &str) -> Result<String> {
