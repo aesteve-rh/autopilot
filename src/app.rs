@@ -19,7 +19,6 @@ use std::{
     thread,
     time::Duration,
 };
-use whoami;
 
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -282,17 +281,16 @@ impl App {
     fn run_remote_command(
         &mut self,
         command: &CommandType,
-        remote: RemoteConfig,
+        remote_config: RemoteConfig,
         sudo: bool,
         hide_stdout: Option<bool>,
         hide_stderr: Option<bool>,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
-        let user = Self::resolve_env(&remote.user.unwrap_or(whoami::username())).unwrap();
-        let username = if sudo { "root" } else { user.as_str() };
-        let addr = format!("{}:{}", remote.host, remote.port.unwrap_or(22));
+        let effective_user = if sudo { "root" } else { &remote_config.user };
+        let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap_or(22));
         let cmd = command.get_command();
-        self.write_buf(format!("[{}@{}]$ {}\n", username, addr, cmd), None);
+        self.write_buf(format!("[{}@{}]$ {}\n", effective_user, addr, cmd), None);
 
         let (times, delay) = if let Some(loop_config) = loop_config {
             (loop_config.times, loop_config.delay)
@@ -309,8 +307,8 @@ impl App {
             session.set_tcp_stream(tcp);
             session.handshake().unwrap();
 
-            let password = Self::resolve_env(&remote.password.unwrap_or(String::new())).unwrap();
-            session.userauth_password(&user, &password).unwrap();
+            let password = Self::resolve_env(&remote_config.password.unwrap_or(String::new())).unwrap();
+            session.userauth_password(&remote_config.user, &password).unwrap();
 
             if !session.authenticated() {
                 return;

@@ -83,7 +83,7 @@
                         "type": "integer",
                         "minimum": 1,
                         "maximum": 65535,
-                        "description": "SSH port (default 22)"
+                        "description": "Remote SSH port (default 22)"
                       },
                       "user": {
                         "type": "string",
@@ -94,7 +94,7 @@
                         "description": "Remote SSH password. Can use '$env:' prefix to mark value as environment variable"
                       }
                     },
-                    "required": ["host"],
+                    "required": ["host", "user"],
                     "additionalProperties": false
                   },
                   "loop": {

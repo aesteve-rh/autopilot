@@ -284,11 +284,11 @@ Must be one of:
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
-| Property                                                   | Pattern | Type    | Deprecated | Definition | Title/Description                                                                  |
-|------------------------------------------------------------|---------|---------|------------|------------|------------------------------------------------------------------------------------|
-| + [host](#stages_items_actions_items_remote_host )         | No      | string  | No         | -          | Remote SSH host                                                                    |
-| - [port](#stages_items_actions_items_remote_port )         | No      | integer | No         | -          | SSH port (default 22)                                                              |
-| - [user](#stages_items_actions_items_remote_user )         | No      | string  | No         | -          | Remote SSH user                                                                    |
+| Property                                                   | Pattern | Type    | Deprecated | Definition | Title/Description                                                                 |
+|------------------------------------------------------------|---------|---------|------------|------------|-----------------------------------------------------------------------------------|
+| + [host](#stages_items_actions_items_remote_host )         | No      | string  | No         | -          | Remote SSH host                                                                   |
+| - [port](#stages_items_actions_items_remote_port )         | No      | integer | No         | -          | Remote SSH port (default 22)                                                      |
+| + [user](#stages_items_actions_items_remote_user )         | No      | string  | No         | -          | Remote SSH user                                                                   |
 | - [password](#stages_items_actions_items_remote_password ) | No      | string  | No         | -          | Remote SSH password. Can use `$env:` prefix to mark value as environment variable |
 
 ###### <a name="stages_items_actions_items_remote_host"></a>1.1.2.1.11.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > host`
@@ -307,7 +307,7 @@ Must be one of:
 | **Type**     | `integer` |
 | **Required** | No        |
 
-**Description:** SSH port (default 22)
+**Description:** Remote SSH port (default 22)
 
 | Restrictions |            |
 |--------------|------------|
@@ -319,7 +319,7 @@ Must be one of:
 |              |          |
 |--------------|----------|
 | **Type**     | `string` |
-| **Required** | No       |
+| **Required** | Yes      |
 
 **Description:** Remote SSH user
 
@@ -372,4 +372,4 @@ Must be one of:
 | **Minimum**  | &ge; 0 |
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-18 at 20:38:09 +0200
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-18 at 22:17:40 +0200
