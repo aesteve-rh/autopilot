@@ -54,7 +54,6 @@ impl ActionStatus {
     }
 }
 
-#[derive(Debug)]
 pub struct App {
     /// Is the application running?
     pub running: bool,
@@ -238,22 +237,9 @@ impl App {
         hide: bool,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
-        fn run_single(cmd: String, hide: bool, buffer: Arc<Mutex<Vec<BufferedOutput>>>) {
-            let output = Command::new("sh")
-                .arg("-c")
-                .arg(cmd.clone())
-                .output()
-                .context("Failed to execute command");
+        let cmd = command.get_command();
+        self.write_buf(format!("$ {}\n", cmd), None);
 
-            let output = output.unwrap();
-            if !hide {
-                App::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stdout));
-            }
-            App::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stderr));
-        }
-
-        self.write_buf(format!("$ {:?}\n", command), None);
-        let cmd = command.clone();
         let (times, delay) = if let Some(loop_config) = loop_config {
             (loop_config.times, loop_config.delay)
         } else {
@@ -269,16 +255,19 @@ impl App {
                     Self::add_to_buf(buffer, "Command interrupted!\n");
                     break;
                 }
-                match cmd {
-                    CommandType::Single(ref cmd) => {
-                        run_single(cmd.clone(), hide, buffer.clone());
-                    }
-                    CommandType::Multiple(ref cmds) => {
-                        for cmd in cmds {
-                            run_single(cmd.clone(), hide, buffer.clone());
-                        }
-                    }
+
+                let output = Command::new("sh")
+                    .arg("-c")
+                    .arg(cmd.clone())
+                    .output()
+                    .context("Failed to execute command");
+
+                let output = output.unwrap();
+                if !hide {
+                    Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stdout));
                 }
+                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stderr));
+
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));
                 }
@@ -297,38 +286,12 @@ impl App {
         hide: bool,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
-        fn run_single(
-            cmd: String,
-            session: Session,
-            password: String,
-            sudo: bool,
-            hide: bool,
-            buffer: Arc<Mutex<Vec<BufferedOutput>>>,
-        ) {
-            let cmd = if sudo {
-                format!("echo {} | sudo -kS -p '' {}", password, cmd)
-            } else {
-                cmd
-            };
-            let mut channel = session.channel_session().unwrap();
-            channel.exec(cmd.as_str()).unwrap();
-
-            let mut stdout = String::new();
-            channel.read_to_string(&mut stdout).unwrap();
-            if !hide {
-                App::add_to_buf(buffer.clone(), &stdout);
-            }
-            let mut stderr = String::new();
-            channel.stderr().read_to_string(&mut stderr).unwrap();
-            App::add_to_buf(buffer.clone(), &stderr);
-        }
-
         let user = Self::resolve_env(&remote.user.unwrap_or(whoami::username())).unwrap();
         let username = if sudo { "root" } else { user.as_str() };
         let addr = format!("{}:{}", remote.host, remote.port.unwrap_or(22));
-        self.write_buf(format!("[{}@{}]$ {:?}\n", username, addr, command), None);
+        let cmd = command.get_command();
+        self.write_buf(format!("[{}@{}]$ {}\n", username, addr, cmd), None);
 
-        let cmd = command.clone();
         let (times, delay) = if let Some(loop_config) = loop_config {
             (loop_config.times, loop_config.delay)
         } else {
@@ -355,30 +318,24 @@ impl App {
                     Self::add_to_buf(buffer, "Command interrupted!\n");
                     break;
                 }
-                match cmd {
-                    CommandType::Single(ref cmd) => {
-                        run_single(
-                            cmd.clone(),
-                            session.clone(),
-                            password.clone(),
-                            sudo,
-                            hide,
-                            buffer.clone(),
-                        );
-                    }
-                    CommandType::Multiple(ref cmds) => {
-                        for cmd in cmds {
-                            run_single(
-                                cmd.clone(),
-                                session.clone(),
-                                password.clone(),
-                                sudo,
-                                hide,
-                                buffer.clone(),
-                            );
-                        }
-                    }
+
+                let cmd = if sudo {
+                    format!("echo {} | sudo -kS -p '' {}", password, cmd)
+                } else {
+                    cmd.clone()
+                };
+                let mut channel = session.channel_session().unwrap();
+                channel.exec(cmd.as_str()).unwrap();
+
+                let mut stdout = String::new();
+                channel.read_to_string(&mut stdout).unwrap();
+                if !hide {
+                    Self::add_to_buf(buffer.clone(), &stdout);
                 }
+                let mut stderr = String::new();
+                channel.stderr().read_to_string(&mut stderr).unwrap();
+                Self::add_to_buf(buffer.clone(), &stderr);
+
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));
                 }

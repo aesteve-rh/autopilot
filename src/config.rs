@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use anyhow::{Context, Result};
-use core::fmt;
 use jsonschema;
 use ratatui::style::{Color, Modifier, Style};
 use serde::{Deserialize, Serialize};
@@ -60,7 +59,7 @@ impl Into<Style> for StyleConfig {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Stage {
     pub name: String,
     pub actions: Vec<Action>,
@@ -73,21 +72,20 @@ pub enum CommandType {
     Multiple(Vec<String>),
 }
 
-impl fmt::Debug for CommandType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl CommandType {
+    pub fn get_command(&self) -> String {
         match self {
             Self::Single(ref cmd) => {
-                write!(f, "{}", cmd)
+                cmd.clone()
             }
             Self::Multiple(ref cmds) => {
-                let out: String = cmds.into_iter().map(|cmd| format!("{}; ", cmd)).collect();
-                write!(f, "{}", out)
+                cmds.join(" && ")
             }
         }
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum Action {
     Message {
@@ -127,7 +125,7 @@ pub struct LoopConfig {
     pub delay: u64,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Default, Deserialize, Serialize)]
 pub struct Config {
     pub stages: Vec<Stage>,
 }
