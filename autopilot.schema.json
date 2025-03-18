@@ -64,9 +64,13 @@
                     "type": "boolean",
                     "description": "Run command with sudo (currently supported for remote only)"
                   },
-                  "hide_output": {
+                  "hide_stdout": {
                     "type": "boolean",
-                    "description": "Hide command output"
+                    "description": "Hide command's stdout"
+                  },
+                  "hide_stderr": {
+                    "type": "boolean",
+                    "description": "Hide command's stderr"
                   },
                   "remote": {
                     "type": "object",
