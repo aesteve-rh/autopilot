@@ -115,8 +115,7 @@ pub struct RemoteConfig {
     pub host: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub port: Option<u16>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub user: Option<String>,
+    pub user: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub password: Option<String>,
 }
