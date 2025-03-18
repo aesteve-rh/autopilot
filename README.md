@@ -17,7 +17,7 @@ and styled terminal output.
   - Run as regular or privileged user
   - Support list of commands
 - Loops with configurable delay
-- Hide command output for silent execution
+- Hide commands' output (`stdout` and/or `stderr`) for silent execution
 - YAML-based, human-friendly configuration
 - Beautiful display in a terminal user interface (TUI)
 
@@ -67,12 +67,13 @@ stages:
 
       - type: command
         command: "echo 'Deploying services...'"
-        hide_output: false
 
       - type: command
         command:
           - restart-service.sh
           - echo 'Service restarted'
+        hide_stdout: true
+        hide_stderr: false
         sudo: true
         remote:
           user: user
@@ -88,7 +89,7 @@ stages:
 ## Run
 
 ```console
-autopilot my_tasks.yaml
+target/release/autopilot my_tasks.yaml
 ```
 
 ## Output

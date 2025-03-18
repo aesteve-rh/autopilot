@@ -190,7 +190,8 @@ impl App {
             config::Action::Command {
                 command,
                 sudo,
-                hide_output,
+                hide_stdout,
+                hide_stderr,
                 remote,
                 r#loop,
             } => {
@@ -199,11 +200,12 @@ impl App {
                         &command,
                         remote_config,
                         sudo.unwrap_or(false),
-                        hide_output.unwrap_or(false),
+                        hide_stdout,
+                        hide_stderr,
                         r#loop,
                     )
                 } else {
-                    self.run_local_command(&command, hide_output.unwrap_or(false), r#loop)
+                    self.run_local_command(&command, hide_stdout, hide_stderr, r#loop)
                 }?;
             }
         };
@@ -221,7 +223,7 @@ impl App {
             for (idx, c) in text.chars().enumerate() {
                 if running.lock().unwrap().force_stop() {
                     // Print the rest of the string all at once.
-                    Self::add_to_buf(buffer, &text[idx..text.len()]);
+                    Self::add_to_buf(buffer, &text[idx..text.len()], None);
                     break;
                 }
                 buffer.lock().unwrap().last_mut().unwrap().text.push(c);
@@ -234,7 +236,8 @@ impl App {
     fn run_local_command(
         &mut self,
         command: &CommandType,
-        hide: bool,
+        hide_stdout: Option<bool>,
+        hide_stderr: Option<bool>,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
         let cmd = command.get_command();
@@ -252,7 +255,7 @@ impl App {
         thread::spawn(move || {
             for repetition in 0..times {
                 if running.lock().unwrap().force_stop() {
-                    Self::add_to_buf(buffer, "Command interrupted!\n");
+                    Self::add_to_buf(buffer, "Command interrupted!\n", hide_stdout);
                     break;
                 }
 
@@ -260,13 +263,11 @@ impl App {
                     .arg("-c")
                     .arg(cmd.clone())
                     .output()
-                    .context("Failed to execute command");
+                    .context("Failed to execute command")
+                    .unwrap();
 
-                let output = output.unwrap();
-                if !hide {
-                    Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stdout));
-                }
-                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stderr));
+                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stdout), hide_stdout);
+                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stderr), hide_stderr);
 
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));
@@ -283,7 +284,8 @@ impl App {
         command: &CommandType,
         remote: RemoteConfig,
         sudo: bool,
-        hide: bool,
+        hide_stdout: Option<bool>,
+        hide_stderr: Option<bool>,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
         let user = Self::resolve_env(&remote.user.unwrap_or(whoami::username())).unwrap();
@@ -315,7 +317,7 @@ impl App {
             }
             for repetition in 0..times {
                 if running.lock().unwrap().force_stop() {
-                    Self::add_to_buf(buffer, "Command interrupted!\n");
+                    Self::add_to_buf(buffer, "Command interrupted!\n", hide_stdout);
                     break;
                 }
 
@@ -329,12 +331,11 @@ impl App {
 
                 let mut stdout = String::new();
                 channel.read_to_string(&mut stdout).unwrap();
-                if !hide {
-                    Self::add_to_buf(buffer.clone(), &stdout);
-                }
+                Self::add_to_buf(buffer.clone(), &stdout, hide_stdout);
+
                 let mut stderr = String::new();
                 channel.stderr().read_to_string(&mut stderr).unwrap();
-                Self::add_to_buf(buffer.clone(), &stderr);
+                Self::add_to_buf(buffer.clone(), &stderr, hide_stderr);
 
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));
@@ -353,8 +354,8 @@ impl App {
         });
     }
 
-    fn add_to_buf(buffer: Arc<Mutex<Vec<BufferedOutput>>>, output: &str) {
-        if !output.is_empty() {
+    fn add_to_buf(buffer: Arc<Mutex<Vec<BufferedOutput>>>, output: &str, hide_output: Option<bool>) {
+        if !hide_output.unwrap_or(false) && !output.is_empty() {
             buffer
                 .lock()
                 .unwrap()

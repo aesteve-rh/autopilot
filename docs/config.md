@@ -24,15 +24,16 @@ SPDX-License-Identifier: GPL-3.0-or-later
         - [1.1.2.1.6. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > speed`](#stages_items_actions_items_speed)
         - [1.1.2.1.7. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > command`](#stages_items_actions_items_command)
         - [1.1.2.1.8. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo`](#stages_items_actions_items_sudo)
-        - [1.1.2.1.9. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_output`](#stages_items_actions_items_hide_output)
-        - [1.1.2.1.10. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote`](#stages_items_actions_items_remote)
-          - [1.1.2.1.10.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > host`](#stages_items_actions_items_remote_host)
-          - [1.1.2.1.10.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > port`](#stages_items_actions_items_remote_port)
-          - [1.1.2.1.10.3. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > user`](#stages_items_actions_items_remote_user)
-          - [1.1.2.1.10.4. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > password`](#stages_items_actions_items_remote_password)
-        - [1.1.2.1.11. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop`](#stages_items_actions_items_loop)
-          - [1.1.2.1.11.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > times`](#stages_items_actions_items_loop_times)
-          - [1.1.2.1.11.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > delay`](#stages_items_actions_items_loop_delay)
+        - [1.1.2.1.9. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_stdout`](#stages_items_actions_items_hide_stdout)
+        - [1.1.2.1.10. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_stderr`](#stages_items_actions_items_hide_stderr)
+        - [1.1.2.1.11. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote`](#stages_items_actions_items_remote)
+          - [1.1.2.1.11.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > host`](#stages_items_actions_items_remote_host)
+          - [1.1.2.1.11.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > port`](#stages_items_actions_items_remote_port)
+          - [1.1.2.1.11.3. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > user`](#stages_items_actions_items_remote_user)
+          - [1.1.2.1.11.4. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > password`](#stages_items_actions_items_remote_password)
+        - [1.1.2.1.12. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop`](#stages_items_actions_items_loop)
+          - [1.1.2.1.12.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > times`](#stages_items_actions_items_loop_times)
+          - [1.1.2.1.12.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > delay`](#stages_items_actions_items_loop_delay)
 
 **Title:** Autopilot Workflow Schema
 
@@ -122,7 +123,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 | - [speed](#stages_items_actions_items_speed )             | No      | integer                   | No         | -          | Typing speed in milliseconds per character                  |
 | - [command](#stages_items_actions_items_command )         | No      | string or array of string | No         | -          | Shell command to execute (required for command actions)     |
 | - [sudo](#stages_items_actions_items_sudo )               | No      | boolean                   | No         | -          | Run command with sudo (currently supported for remote only) |
-| - [hide_output](#stages_items_actions_items_hide_output ) | No      | boolean                   | No         | -          | Hide command output                                         |
+| - [hide_stdout](#stages_items_actions_items_hide_stdout ) | No      | boolean                   | No         | -          | Hide command's stdout                                       |
+| - [hide_stderr](#stages_items_actions_items_hide_stderr ) | No      | boolean                   | No         | -          | Hide command's stderr                                       |
 | - [remote](#stages_items_actions_items_remote )           | No      | object                    | No         | -          | -                                                           |
 | - [loop](#stages_items_actions_items_loop )               | No      | object                    | No         | -          | -                                                           |
 
@@ -256,16 +258,25 @@ Must be one of:
 
 **Description:** Run command with sudo (currently supported for remote only)
 
-###### <a name="stages_items_actions_items_hide_output"></a>1.1.2.1.9. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_output`
+###### <a name="stages_items_actions_items_hide_stdout"></a>1.1.2.1.9. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_stdout`
 
 |              |           |
 |--------------|-----------|
 | **Type**     | `boolean` |
 | **Required** | No        |
 
-**Description:** Hide command output
+**Description:** Hide command's stdout
 
-###### <a name="stages_items_actions_items_remote"></a>1.1.2.1.10. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote`
+###### <a name="stages_items_actions_items_hide_stderr"></a>1.1.2.1.10. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_stderr`
+
+|              |           |
+|--------------|-----------|
+| **Type**     | `boolean` |
+| **Required** | No        |
+
+**Description:** Hide command's stderr
+
+###### <a name="stages_items_actions_items_remote"></a>1.1.2.1.11. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote`
 
 |                           |             |
 |---------------------------|-------------|
@@ -273,14 +284,14 @@ Must be one of:
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
-| Property                                                  | Pattern | Type    | Deprecated | Definition | Title/Description                                                                 |
-|-----------------------------------------------------------|---------|---------|------------|------------|-----------------------------------------------------------------------------------|
-| + [host](#stages_items_actions_items_remote_host)         | No      | string  | No         | -          | Remote SSH host                                                                   |
-| - [port](#stages_items_actions_items_remote_port)         | No      | integer | No         | -          | SSH port (default 22)                                                             |
-| - [user](#stages_items_actions_items_remote_user)         | No      | string  | No         | -          | Remote SSH user                                                                   |
-| - [password](#stages_items_actions_items_remote_password) | No      | string  | No         | -          | Remote SSH password. Can use `$env:` prefix to mark value as environment variable |
+| Property                                                   | Pattern | Type    | Deprecated | Definition | Title/Description                                                                  |
+|------------------------------------------------------------|---------|---------|------------|------------|------------------------------------------------------------------------------------|
+| + [host](#stages_items_actions_items_remote_host )         | No      | string  | No         | -          | Remote SSH host                                                                    |
+| - [port](#stages_items_actions_items_remote_port )         | No      | integer | No         | -          | SSH port (default 22)                                                              |
+| - [user](#stages_items_actions_items_remote_user )         | No      | string  | No         | -          | Remote SSH user                                                                    |
+| - [password](#stages_items_actions_items_remote_password ) | No      | string  | No         | -          | Remote SSH password. Can use `$env:` prefix to mark value as environment variable |
 
-###### <a name="stages_items_actions_items_remote_host"></a>1.1.2.1.10.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > host`
+###### <a name="stages_items_actions_items_remote_host"></a>1.1.2.1.11.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > host`
 
 |              |          |
 |--------------|----------|
@@ -289,7 +300,7 @@ Must be one of:
 
 **Description:** Remote SSH host
 
-###### <a name="stages_items_actions_items_remote_port"></a>1.1.2.1.10.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > port`
+###### <a name="stages_items_actions_items_remote_port"></a>1.1.2.1.11.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > port`
 
 |              |           |
 |--------------|-----------|
@@ -303,7 +314,7 @@ Must be one of:
 | **Minimum**  | &ge; 1     |
 | **Maximum**  | &le; 65535 |
 
-###### <a name="stages_items_actions_items_remote_user"></a>1.1.2.1.10.3. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > user`
+###### <a name="stages_items_actions_items_remote_user"></a>1.1.2.1.11.3. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > user`
 
 |              |          |
 |--------------|----------|
@@ -312,16 +323,16 @@ Must be one of:
 
 **Description:** Remote SSH user
 
-###### <a name="stages_items_actions_items_remote_password"></a>1.1.2.1.10.4. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > password`
+###### <a name="stages_items_actions_items_remote_password"></a>1.1.2.1.11.4. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > password`
 
 |              |          |
 |--------------|----------|
 | **Type**     | `string` |
 | **Required** | No       |
 
-**Description:** Remote SSH password. Can use '$env:' prefix to mark value as environment variable
+**Description:** Remote SSH password. Can use `$env:` prefix to mark value as environment variable
 
-###### <a name="stages_items_actions_items_loop"></a>1.1.2.1.11. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop`
+###### <a name="stages_items_actions_items_loop"></a>1.1.2.1.12. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop`
 
 |                           |             |
 |---------------------------|-------------|
@@ -334,7 +345,7 @@ Must be one of:
 | + [times](#stages_items_actions_items_loop_times ) | No      | integer | No         | -          | Number of iterations                     |
 | - [delay](#stages_items_actions_items_loop_delay ) | No      | integer | No         | -          | Delay between iterations in milliseconds |
 
-###### <a name="stages_items_actions_items_loop_times"></a>1.1.2.1.11.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > times`
+###### <a name="stages_items_actions_items_loop_times"></a>1.1.2.1.12.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > times`
 
 |              |           |
 |--------------|-----------|
@@ -347,7 +358,7 @@ Must be one of:
 |--------------|--------|
 | **Minimum**  | &ge; 1 |
 
-###### <a name="stages_items_actions_items_loop_delay"></a>1.1.2.1.11.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > delay`
+###### <a name="stages_items_actions_items_loop_delay"></a>1.1.2.1.12.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > delay`
 
 |              |           |
 |--------------|-----------|
@@ -361,4 +372,4 @@ Must be one of:
 | **Minimum**  | &ge; 0 |
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-08 at 11:15:11 +0100
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-18 at 20:38:09 +0200

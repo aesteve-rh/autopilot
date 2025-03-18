@@ -100,7 +100,9 @@ pub enum Action {
         #[serde(skip_serializing_if = "Option::is_none")]
         sudo: Option<bool>,
         #[serde(skip_serializing_if = "Option::is_none")]
-        hide_output: Option<bool>,
+        hide_stdout: Option<bool>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        hide_stderr: Option<bool>,
         #[serde(skip_serializing_if = "Option::is_none")]
         remote: Option<RemoteConfig>,
         #[serde(skip_serializing_if = "Option::is_none")]

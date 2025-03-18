@@ -24,7 +24,8 @@ stages:
 
       - type: "command"
         command: "echo 'Commands support hidden output'"
-        hide_output: true
+        hide_stdout: true
+        hide_stderr: false
 
       - type: "command"
         command: "head -4 README.md"
