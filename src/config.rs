@@ -113,11 +113,21 @@ pub enum Action {
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct RemoteConfig {
     pub host: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default = "RemoteConfig::port_default")]
     pub port: Option<u16>,
     pub user: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", default = "RemoteConfig::password_default")]
     pub password: Option<String>,
+}
+
+impl RemoteConfig {
+    fn port_default() -> Option<u16> {
+        Some(22)
+    }
+
+    fn password_default() -> Option<String> {
+        Some(String::new())
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
