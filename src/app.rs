@@ -288,7 +288,7 @@ impl App {
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
         let effective_user = if sudo { "root" } else { &remote_config.user };
-        let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap_or(22));
+        let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap());
         let cmd = command.get_command();
         self.write_buf(format!("[{}@{}]$ {}\n", effective_user, addr, cmd), None);
 
@@ -307,7 +307,7 @@ impl App {
             session.set_tcp_stream(tcp);
             session.handshake().unwrap();
 
-            let password = Self::resolve_env(&remote_config.password.unwrap_or(String::new())).unwrap();
+            let password = Self::resolve_env(&remote_config.password.unwrap()).unwrap();
             session.userauth_password(&remote_config.user, &password).unwrap();
 
             if !session.authenticated() {

@@ -79,6 +79,7 @@ stages:
           user: user
           host: server.com
           port: 22
+          password: $env:REMOTE_PASSWORD
         loop:
           times: 3
           delay: 2000
