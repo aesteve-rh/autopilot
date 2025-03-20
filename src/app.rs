@@ -201,14 +201,14 @@ impl App {
                         sudo.unwrap_or(false),
                         hide_stdout.unwrap(),
                         hide_stderr.unwrap(),
-                        r#loop,
+                        r#loop.unwrap(),
                     )
                 } else {
                     self.run_local_command(
                         &command,
                         hide_stdout.unwrap(),
                         hide_stderr.unwrap(),
-                        r#loop,
+                        r#loop.unwrap(),
                     )
                 }?;
             }
@@ -242,21 +242,17 @@ impl App {
         command: &CommandType,
         hide_stdout: bool,
         hide_stderr: bool,
-        loop_config: Option<LoopConfig>,
+        loop_config: LoopConfig,
     ) -> io::Result<()> {
         let cmd = command.get_command();
         self.write_buf(format!("$ {}\n", cmd), None);
-
-        let (times, delay) = if let Some(loop_config) = loop_config {
-            (loop_config.times, loop_config.delay)
-        } else {
-            (1, 0)
-        };
 
         let running = self.action_status.clone();
         *running.lock().unwrap() = ActionStatus::Running;
         let buffer = self.buffer.clone();
         thread::spawn(move || {
+            let times = loop_config.times;
+            let delay = loop_config.delay.unwrap();
             for repetition in 0..times {
                 if running.lock().unwrap().force_stop() {
                     Self::add_to_buf(buffer, "Command interrupted!\n", hide_stdout);
@@ -290,18 +286,12 @@ impl App {
         sudo: bool,
         hide_stdout: bool,
         hide_stderr: bool,
-        loop_config: Option<LoopConfig>,
+        loop_config: LoopConfig,
     ) -> io::Result<()> {
         let effective_user = if sudo { "root" } else { &remote_config.user };
         let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap());
         let cmd = command.get_command();
         self.write_buf(format!("[{}@{}]$ {}\n", effective_user, addr, cmd), None);
-
-        let (times, delay) = if let Some(loop_config) = loop_config {
-            (loop_config.times, loop_config.delay)
-        } else {
-            (1, 0)
-        };
 
         let running = self.action_status.clone();
         *running.lock().unwrap() = ActionStatus::Running;
@@ -318,6 +308,9 @@ impl App {
             if !session.authenticated() {
                 return;
             }
+
+            let times = loop_config.times;
+            let delay = loop_config.delay.unwrap();
             for repetition in 0..times {
                 if running.lock().unwrap().force_stop() {
                     Self::add_to_buf(buffer, "Command interrupted!\n", hide_stdout);

@@ -105,7 +105,7 @@ pub enum Action {
         hide_stderr: Option<bool>,
         #[serde(skip_serializing_if = "Option::is_none")]
         remote: Option<RemoteConfig>,
-        #[serde(skip_serializing_if = "Option::is_none")]
+        #[serde(skip_serializing_if = "Option::is_none", default = "Action::loop_config_default")]
         r#loop: Option<LoopConfig>,
     },
 }
@@ -121,6 +121,10 @@ impl Action {
 
     fn stderr_default() -> Option<bool> {
         Some(false)
+    }
+
+    fn loop_config_default() -> Option<LoopConfig> {
+        Some(LoopConfig { times: 1, delay: LoopConfig::delay_default() })
     }
 }
 
@@ -144,10 +148,17 @@ impl RemoteConfig {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct LoopConfig {
     pub times: u32,
-    pub delay: u64,
+    #[serde(skip_serializing_if = "Option::is_none", default = "LoopConfig::delay_default")]
+    pub delay: Option<u64>,
+}
+
+impl LoopConfig {
+    fn delay_default() -> Option<u64> {
+        Some(0)
+    }
 }
 
 #[derive(Default, Deserialize, Serialize)]

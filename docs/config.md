@@ -340,10 +340,10 @@ Must be one of:
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
-| Property                                           | Pattern | Type    | Deprecated | Definition | Title/Description                        |
-|----------------------------------------------------|---------|---------|------------|------------|------------------------------------------|
-| + [times](#stages_items_actions_items_loop_times ) | No      | integer | No         | -          | Number of iterations                     |
-| - [delay](#stages_items_actions_items_loop_delay ) | No      | integer | No         | -          | Delay between iterations in milliseconds |
+| Property                                           | Pattern | Type    | Deprecated | Definition | Title/Description                                    |
+|----------------------------------------------------|---------|---------|------------|------------|------------------------------------------------------|
+| + [times](#stages_items_actions_items_loop_times ) | No      | integer | No         | -          | Number of iterations                                 |
+| - [delay](#stages_items_actions_items_loop_delay ) | No      | integer | No         | -          | Delay between iterations in milliseconds (default 0) |
 
 ###### <a name="stages_items_actions_items_loop_times"></a>1.1.2.1.12.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > loop > times`
 
@@ -365,11 +365,11 @@ Must be one of:
 | **Type**     | `integer` |
 | **Required** | No        |
 
-**Description:** Delay between iterations in milliseconds
+**Description:** Delay between iterations in milliseconds (default 0)
 
 | Restrictions |        |
 |--------------|--------|
 | **Minimum**  | &ge; 0 |
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-20 at 12:04:50 +0200
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-20 at 16:18:20 +0200
