@@ -108,7 +108,7 @@
                       "delay": {
                         "type": "integer",
                         "minimum": 0,
-                        "description": "Delay between iterations in milliseconds"
+                        "description": "Delay between iterations in milliseconds (default 0)"
                       }
                     },
                     "required": ["times"],
