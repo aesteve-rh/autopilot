@@ -120,11 +120,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 | + [type](#stages_items_actions_items_type )               | No      | enum (of string)          | No         | -          | Action type: message or command                             |
 | - [text](#stages_items_actions_items_text )               | No      | string                    | No         | -          | Message text (required for message actions)                 |
 | - [style](#stages_items_actions_items_style )             | No      | object                    | No         | -          | -                                                           |
-| - [speed](#stages_items_actions_items_speed )             | No      | integer                   | No         | -          | Typing speed in milliseconds per character                  |
+| - [speed](#stages_items_actions_items_speed )             | No      | integer                   | No         | -          | Typing speed in milliseconds per character (default 50)     |
 | - [command](#stages_items_actions_items_command )         | No      | string or array of string | No         | -          | Shell command to execute (required for command actions)     |
 | - [sudo](#stages_items_actions_items_sudo )               | No      | boolean                   | No         | -          | Run command with sudo (currently supported for remote only) |
-| - [hide_stdout](#stages_items_actions_items_hide_stdout ) | No      | boolean                   | No         | -          | Hide command's stdout                                       |
-| - [hide_stderr](#stages_items_actions_items_hide_stderr ) | No      | boolean                   | No         | -          | Hide command's stderr                                       |
+| - [hide_stdout](#stages_items_actions_items_hide_stdout ) | No      | boolean                   | No         | -          | Hide command's stdout (default false)                       |
+| - [hide_stderr](#stages_items_actions_items_hide_stderr ) | No      | boolean                   | No         | -          | Hide command's stderr (default false)                       |
 | - [remote](#stages_items_actions_items_remote )           | No      | object                    | No         | -          | -                                                           |
 | - [loop](#stages_items_actions_items_loop )               | No      | object                    | No         | -          | -                                                           |
 
@@ -234,7 +234,7 @@ Must be one of:
 | **Type**     | `integer` |
 | **Required** | No        |
 
-**Description:** Typing speed in milliseconds per character
+**Description:** Typing speed in milliseconds per character (default 50)
 
 | Restrictions |        |
 |--------------|--------|
@@ -265,7 +265,7 @@ Must be one of:
 | **Type**     | `boolean` |
 | **Required** | No        |
 
-**Description:** Hide command's stdout
+**Description:** Hide command's stdout (default false)
 
 ###### <a name="stages_items_actions_items_hide_stderr"></a>1.1.2.1.10. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_stderr`
 
@@ -274,7 +274,7 @@ Must be one of:
 | **Type**     | `boolean` |
 | **Required** | No        |
 
-**Description:** Hide command's stderr
+**Description:** Hide command's stderr (default false)
 
 ###### <a name="stages_items_actions_items_remote"></a>1.1.2.1.11. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote`
 
@@ -372,4 +372,4 @@ Must be one of:
 | **Minimum**  | &ge; 0 |
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-19 at 19:26:32 +0200
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-20 at 12:04:50 +0200

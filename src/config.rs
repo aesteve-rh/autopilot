@@ -92,22 +92,36 @@ pub enum Action {
         text: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         style: Option<StyleConfig>,
-        #[serde(skip_serializing_if = "Option::is_none")]
+        #[serde(skip_serializing_if = "Option::is_none", default = "Action::speed_default")]
         speed: Option<u64>,
     },
     Command {
         command: CommandType,
         #[serde(skip_serializing_if = "Option::is_none")]
         sudo: Option<bool>,
-        #[serde(skip_serializing_if = "Option::is_none")]
+        #[serde(skip_serializing_if = "Option::is_none", default = "Action::stdout_default")]
         hide_stdout: Option<bool>,
-        #[serde(skip_serializing_if = "Option::is_none")]
+        #[serde(skip_serializing_if = "Option::is_none", default = "Action::stderr_default")]
         hide_stderr: Option<bool>,
         #[serde(skip_serializing_if = "Option::is_none")]
         remote: Option<RemoteConfig>,
         #[serde(skip_serializing_if = "Option::is_none")]
         r#loop: Option<LoopConfig>,
     },
+}
+
+impl Action {
+    fn speed_default() -> Option<u64> {
+        Some(50)
+    }
+
+    fn stdout_default() -> Option<bool> {
+        Some(false)
+    }
+
+    fn stderr_default() -> Option<bool> {
+        Some(false)
+    }
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]

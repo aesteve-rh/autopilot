@@ -51,7 +51,7 @@
                   "speed": {
                     "type": "integer",
                     "minimum": 0,
-                    "description": "Typing speed in milliseconds per character"
+                    "description": "Typing speed in milliseconds per character (default 50)"
                   },
                   "command": {
                     "type": ["string", "array"],
@@ -66,11 +66,11 @@
                   },
                   "hide_stdout": {
                     "type": "boolean",
-                    "description": "Hide command's stdout"
+                    "description": "Hide command's stdout (default false)"
                   },
                   "hide_stderr": {
                     "type": "boolean",
-                    "description": "Hide command's stderr"
+                    "description": "Hide command's stderr (default false)"
                   },
                   "remote": {
                     "type": "object",
