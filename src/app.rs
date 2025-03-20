@@ -184,7 +184,7 @@ impl App {
         }
         match self.config.stages[self.stage_idx].actions[self.action_idx].clone() {
             config::Action::Message { text, style, speed } => {
-                self.write_message(text, style, speed);
+                self.write_message(text, style, speed.unwrap());
             }
             config::Action::Command {
                 command,
@@ -199,12 +199,17 @@ impl App {
                         &command,
                         remote_config,
                         sudo.unwrap_or(false),
-                        hide_stdout,
-                        hide_stderr,
+                        hide_stdout.unwrap(),
+                        hide_stderr.unwrap(),
                         r#loop,
                     )
                 } else {
-                    self.run_local_command(&command, hide_stdout, hide_stderr, r#loop)
+                    self.run_local_command(
+                        &command,
+                        hide_stdout.unwrap(),
+                        hide_stderr.unwrap(),
+                        r#loop,
+                    )
                 }?;
             }
         };
@@ -213,7 +218,7 @@ impl App {
         Ok(())
     }
 
-    fn write_message(&mut self, text: String, style: Option<StyleConfig>, speed: Option<u64>) {
+    fn write_message(&mut self, text: String, style: Option<StyleConfig>, speed: u64) {
         let running = self.action_status.clone();
         *running.lock().unwrap() = ActionStatus::Running;
         self.write_buf(String::from("> "), style);
@@ -222,11 +227,11 @@ impl App {
             for (idx, c) in text.chars().enumerate() {
                 if running.lock().unwrap().force_stop() {
                     // Print the rest of the string all at once.
-                    Self::add_to_buf(buffer, &text[idx..text.len()], None);
+                    Self::add_to_buf(buffer, &text[idx..text.len()], false);
                     break;
                 }
                 buffer.lock().unwrap().last_mut().unwrap().text.push(c);
-                thread::sleep(Duration::from_millis(speed.unwrap_or(50)));
+                thread::sleep(Duration::from_millis(speed));
             }
             *running.lock().unwrap() = ActionStatus::Stopped;
         });
@@ -235,8 +240,8 @@ impl App {
     fn run_local_command(
         &mut self,
         command: &CommandType,
-        hide_stdout: Option<bool>,
-        hide_stderr: Option<bool>,
+        hide_stdout: bool,
+        hide_stderr: bool,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
         let cmd = command.get_command();
@@ -283,8 +288,8 @@ impl App {
         command: &CommandType,
         remote_config: RemoteConfig,
         sudo: bool,
-        hide_stdout: Option<bool>,
-        hide_stderr: Option<bool>,
+        hide_stdout: bool,
+        hide_stderr: bool,
         loop_config: Option<LoopConfig>,
     ) -> io::Result<()> {
         let effective_user = if sudo { "root" } else { &remote_config.user };
@@ -352,8 +357,8 @@ impl App {
         });
     }
 
-    fn add_to_buf(buffer: Arc<Mutex<Vec<BufferedOutput>>>, output: &str, hide_output: Option<bool>) {
-        if !hide_output.unwrap_or(false) && !output.is_empty() {
+    fn add_to_buf(buffer: Arc<Mutex<Vec<BufferedOutput>>>, output: &str, hide_output: bool) {
+        if !hide_output && !output.is_empty() {
             buffer
                 .lock()
                 .unwrap()
