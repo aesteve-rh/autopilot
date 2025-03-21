@@ -61,8 +61,19 @@
                     }
                   },
                   "sudo": {
-                    "type": "boolean",
-                    "description": "Run command with sudo (currently supported for remote only)"
+                    "type": "object",
+                    "description": "Run command with elevated privileges",
+                    "properties": {
+                      "user": {
+                        "type": "string",
+                        "description": "Privileged user (default 'root')"
+                      },
+                      "password": {
+                        "type": "string",
+                        "description": "Privileged password (empty by default). Can use '$env:' prefix to mark value as environment variable"
+                      }
+                    },
+                    "additionalProperties": false
                   },
                   "hide_stdout": {
                     "type": "boolean",

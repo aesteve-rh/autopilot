@@ -1,5 +1,6 @@
 <!--
 SPDX-FileCopyrightText: 2025 Albert Esteve <aesteve@redhat.com>
+SPDX-FileCopyrightText: 2025 Pavel Bar <pbar@redhat.com>
 
 SPDX-License-Identifier: GPL-3.0-or-later
 -->
@@ -24,6 +25,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
         - [1.1.2.1.6. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > speed`](#stages_items_actions_items_speed)
         - [1.1.2.1.7. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > command`](#stages_items_actions_items_command)
         - [1.1.2.1.8. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo`](#stages_items_actions_items_sudo)
+          - [1.1.2.1.8.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo > user`](#stages_items_actions_items_sudo_user)
+          - [1.1.2.1.8.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo > password`](#stages_items_actions_items_sudo_password)
         - [1.1.2.1.9. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_stdout`](#stages_items_actions_items_hide_stdout)
         - [1.1.2.1.10. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_stderr`](#stages_items_actions_items_hide_stderr)
         - [1.1.2.1.11. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote`](#stages_items_actions_items_remote)
@@ -115,18 +118,18 @@ SPDX-License-Identifier: GPL-3.0-or-later
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
-| Property                                                  | Pattern | Type                      | Deprecated | Definition | Title/Description                                           |
-|-----------------------------------------------------------|---------|---------------------------|------------|------------|-------------------------------------------------------------|
-| + [type](#stages_items_actions_items_type )               | No      | enum (of string)          | No         | -          | Action type: message or command                             |
-| - [text](#stages_items_actions_items_text )               | No      | string                    | No         | -          | Message text (required for message actions)                 |
-| - [style](#stages_items_actions_items_style )             | No      | object                    | No         | -          | -                                                           |
-| - [speed](#stages_items_actions_items_speed )             | No      | integer                   | No         | -          | Typing speed in milliseconds per character (default 50)     |
-| - [command](#stages_items_actions_items_command )         | No      | string or array of string | No         | -          | Shell command to execute (required for command actions)     |
-| - [sudo](#stages_items_actions_items_sudo )               | No      | boolean                   | No         | -          | Run command with sudo (currently supported for remote only) |
-| - [hide_stdout](#stages_items_actions_items_hide_stdout ) | No      | boolean                   | No         | -          | Hide command's stdout (default false)                       |
-| - [hide_stderr](#stages_items_actions_items_hide_stderr ) | No      | boolean                   | No         | -          | Hide command's stderr (default false)                       |
-| - [remote](#stages_items_actions_items_remote )           | No      | object                    | No         | -          | -                                                           |
-| - [loop](#stages_items_actions_items_loop )               | No      | object                    | No         | -          | -                                                           |
+| Property                                                  | Pattern | Type                      | Deprecated | Definition | Title/Description                                       |
+|-----------------------------------------------------------|---------|---------------------------|------------|------------|---------------------------------------------------------|
+| + [type](#stages_items_actions_items_type )               | No      | enum (of string)          | No         | -          | Action type: message or command                         |
+| - [text](#stages_items_actions_items_text )               | No      | string                    | No         | -          | Message text (required for message actions)             |
+| - [style](#stages_items_actions_items_style )             | No      | object                    | No         | -          | -                                                       |
+| - [speed](#stages_items_actions_items_speed )             | No      | integer                   | No         | -          | Typing speed in milliseconds per character (default 50) |
+| - [command](#stages_items_actions_items_command )         | No      | string or array of string | No         | -          | Shell command to execute (required for command actions) |
+| - [sudo](#stages_items_actions_items_sudo )               | No      | object                    | No         | -          | Run command with elevated privileges                    |
+| - [hide_stdout](#stages_items_actions_items_hide_stdout ) | No      | boolean                   | No         | -          | Hide command's stdout (default false)                   |
+| - [hide_stderr](#stages_items_actions_items_hide_stderr ) | No      | boolean                   | No         | -          | Hide command's stderr (default false)                   |
+| - [remote](#stages_items_actions_items_remote )           | No      | object                    | No         | -          | -                                                       |
+| - [loop](#stages_items_actions_items_loop )               | No      | object                    | No         | -          | -                                                       |
 
 | Any of(Option)                                 |
 |------------------------------------------------|
@@ -251,12 +254,36 @@ Must be one of:
 
 ###### <a name="stages_items_actions_items_sudo"></a>1.1.2.1.8. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo`
 
-|              |           |
-|--------------|-----------|
-| **Type**     | `boolean` |
-| **Required** | No        |
+|                           |             |
+|---------------------------|-------------|
+| **Type**                  | `object`    |
+| **Required**              | No          |
+| **Additional properties** | Not allowed |
 
-**Description:** Run command with sudo (currently supported for remote only)
+**Description:** Run command with elevated privileges
+
+| Property                                                 | Pattern | Type   | Deprecated | Definition | Title/Description                                                                                    |
+|----------------------------------------------------------|---------|--------|------------|------------|------------------------------------------------------------------------------------------------------|
+| - [user](#stages_items_actions_items_sudo_user )         | No      | string | No         | -          | Privileged user (default 'root')                                                                     |
+| - [password](#stages_items_actions_items_sudo_password ) | No      | string | No         | -          | Privileged password (empty by default). Can use `$env:` prefix to mark value as environment variable |
+
+###### <a name="stages_items_actions_items_sudo_user"></a>1.1.2.1.8.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo > user`
+
+|              |          |
+|--------------|----------|
+| **Type**     | `string` |
+| **Required** | No       |
+
+**Description:** Privileged user (default 'root')
+
+###### <a name="stages_items_actions_items_sudo_password"></a>1.1.2.1.8.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo > password`
+
+|              |          |
+|--------------|----------|
+| **Type**     | `string` |
+| **Required** | No       |
+
+**Description:** Privileged password (empty by default). Can use `$env:` prefix to mark value as environment variable
 
 ###### <a name="stages_items_actions_items_hide_stdout"></a>1.1.2.1.9. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > hide_stdout`
 
@@ -372,4 +399,4 @@ Must be one of:
 | **Minimum**  | &ge; 0 |
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-20 at 16:18:20 +0200
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-20 at 18:21:07 +0200

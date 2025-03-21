@@ -98,7 +98,7 @@ pub enum Action {
     Command {
         command: CommandType,
         #[serde(skip_serializing_if = "Option::is_none")]
-        sudo: Option<bool>,
+        sudo: Option<SudoConfig>,
         #[serde(skip_serializing_if = "Option::is_none", default = "Action::stdout_default")]
         hide_stdout: Option<bool>,
         #[serde(skip_serializing_if = "Option::is_none", default = "Action::stderr_default")]
@@ -125,6 +125,24 @@ impl Action {
 
     fn loop_config_default() -> Option<LoopConfig> {
         Some(LoopConfig { times: 1, delay: LoopConfig::delay_default() })
+    }
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub struct SudoConfig {
+    #[serde(skip_serializing_if = "Option::is_none", default = "SudoConfig::sudo_user_default")]
+    pub user: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none", default = "SudoConfig::password_default")]
+    pub password: Option<String>,
+}
+
+impl SudoConfig {
+    fn sudo_user_default() -> Option<String> {
+        Some("root".to_string())
+    }
+
+    fn password_default() -> Option<String> {
+        Some(String::new())
     }
 }
 
