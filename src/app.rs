@@ -334,13 +334,13 @@ impl App {
                 let mut channel = session.channel_session().unwrap();
                 channel.exec(cmd.as_str()).unwrap();
 
-                let mut stdout = String::new();
-                channel.read_to_string(&mut stdout).unwrap();
-                Self::add_to_buf(buffer.clone(), &stdout, hide_stdout);
+                let mut stdout: Vec<u8> = Vec::new();
+                channel.read_to_end(&mut stdout).unwrap();
+                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&stdout), hide_stdout);
 
-                let mut stderr = String::new();
-                channel.stderr().read_to_string(&mut stderr).unwrap();
-                Self::add_to_buf(buffer.clone(), &stderr, hide_stderr);
+                let mut stderr: Vec<u8> = Vec::new();
+                channel.stderr().read_to_end(&mut stderr).unwrap();
+                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&stderr), hide_stderr);
 
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));
