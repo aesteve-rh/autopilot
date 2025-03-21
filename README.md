@@ -74,7 +74,9 @@ stages:
           - echo 'Service restarted'
         hide_stdout: true
         hide_stderr: false
-        sudo: true
+        sudo:
+          user: root
+          password: admin1234
         remote:
           user: user
           host: server.com

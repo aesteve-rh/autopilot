@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::config::{self, CommandType, LoopConfig, RemoteConfig, StyleConfig};
+use crate::config::{self, CommandType, LoopConfig, RemoteConfig, StyleConfig, SudoConfig};
 use anyhow::{Context, Result};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
@@ -198,7 +198,7 @@ impl App {
                     self.run_remote_command(
                         &command,
                         remote_config,
-                        sudo.unwrap_or(false),
+                        sudo,
                         hide_stdout.unwrap(),
                         hide_stderr.unwrap(),
                         r#loop.unwrap(),
@@ -206,6 +206,7 @@ impl App {
                 } else {
                     self.run_local_command(
                         &command,
+                        sudo,
                         hide_stdout.unwrap(),
                         hide_stderr.unwrap(),
                         r#loop.unwrap(),
@@ -240,13 +241,20 @@ impl App {
     fn run_local_command(
         &mut self,
         command: &CommandType,
+        sudo: Option<SudoConfig>,
         hide_stdout: bool,
         hide_stderr: bool,
         loop_config: LoopConfig,
     ) -> io::Result<()> {
-        let cmd = command.get_command();
-        self.write_buf(format!("$ {}\n", cmd), None);
 
+        let prompt = Self::get_prompt(
+            sudo.clone(),
+            &whoami::username(),
+            &whoami::fallible::hostname()?);
+        let cmd = command.get_command();
+        self.write_buf(format!("{} {}\n", prompt, cmd), None);
+
+        let cmd = Self::get_sudo_command(cmd, sudo);
         let running = self.action_status.clone();
         *running.lock().unwrap() = ActionStatus::Running;
         let buffer = self.buffer.clone();
@@ -283,16 +291,20 @@ impl App {
         &mut self,
         command: &CommandType,
         remote_config: RemoteConfig,
-        sudo: bool,
+        sudo: Option<SudoConfig>,
         hide_stdout: bool,
         hide_stderr: bool,
         loop_config: LoopConfig,
     ) -> io::Result<()> {
-        let effective_user = if sudo { "root" } else { &remote_config.user };
         let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap());
+        let prompt = Self::get_prompt(
+            sudo.clone(),
+            &remote_config.user,
+            &addr);
         let cmd = command.get_command();
-        self.write_buf(format!("[{}@{}]$ {}\n", effective_user, addr, cmd), None);
+        self.write_buf(format!("{} {}\n", prompt, cmd), None);
 
+        let cmd = Self::get_sudo_command(cmd, sudo);
         let running = self.action_status.clone();
         *running.lock().unwrap() = ActionStatus::Running;
         let buffer = self.buffer.clone();
@@ -317,11 +329,6 @@ impl App {
                     break;
                 }
 
-                let cmd = if sudo {
-                    format!("echo {} | sudo -kS -p '' {}", password, cmd)
-                } else {
-                    cmd.clone()
-                };
                 let mut channel = session.channel_session().unwrap();
                 channel.exec(cmd.as_str()).unwrap();
 
@@ -373,5 +380,25 @@ impl App {
 
     fn exit(&mut self) {
         self.running = false;
+    }
+
+    fn get_prompt(sudo: Option<SudoConfig>, effective_user: &String, host: &String) -> String {
+        let (user, prompt_char)  = if let Some(sudo_config) = sudo {
+            (&sudo_config.user.unwrap(), '#')
+        } else {
+            (effective_user, '$')
+        };
+
+        format!("[{}@{}]{}", user, host, prompt_char)
+    }
+
+    fn get_sudo_command(cmd: String, sudo: Option<SudoConfig>) -> String {
+        if let Some(sudo_config) = sudo {
+            let user = sudo_config.user.unwrap();
+            let password = Self::resolve_env(&sudo_config.password.unwrap()).unwrap();
+            format!("echo {} | sudo -kS -u {} -p '' {}", password, user, cmd)
+        } else {
+            cmd
+        }
     }
 }
