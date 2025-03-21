@@ -220,13 +220,14 @@ impl App {
     }
 
     fn write_message(&mut self, text: String, style: Option<StyleConfig>, speed: u64) {
-        let running = self.action_status.clone();
-        *running.lock().unwrap() = ActionStatus::Running;
+        let exec_status = self.action_status.clone();
+        *exec_status.lock().unwrap() = ActionStatus::Running;
+
         self.write_buf(String::from("> "), style);
         let buffer = self.buffer.clone();
         thread::spawn(move || {
             for (idx, c) in text.chars().enumerate() {
-                if running.lock().unwrap().force_stop() {
+                if exec_status.lock().unwrap().force_stop() {
                     // Print the rest of the string all at once.
                     Self::add_to_buf(buffer, &text[idx..text.len()], false);
                     break;
@@ -234,7 +235,7 @@ impl App {
                 buffer.lock().unwrap().last_mut().unwrap().text.push(c);
                 thread::sleep(Duration::from_millis(speed));
             }
-            *running.lock().unwrap() = ActionStatus::Stopped;
+            *exec_status.lock().unwrap() = ActionStatus::Stopped;
         });
     }
 
@@ -246,6 +247,8 @@ impl App {
         hide_stderr: bool,
         loop_config: LoopConfig,
     ) -> io::Result<()> {
+        let exec_status = self.action_status.clone();
+        *exec_status.lock().unwrap() = ActionStatus::Running;
 
         let prompt = Self::get_prompt(
             sudo.clone(),
@@ -255,14 +258,12 @@ impl App {
         self.write_buf(format!("{} {}\n", prompt, cmd), None);
 
         let cmd = Self::get_sudo_command(cmd, sudo);
-        let running = self.action_status.clone();
-        *running.lock().unwrap() = ActionStatus::Running;
         let buffer = self.buffer.clone();
         thread::spawn(move || {
             let times = loop_config.times;
             let delay = loop_config.delay.unwrap();
             for repetition in 0..times {
-                if running.lock().unwrap().force_stop() {
+                if exec_status.lock().unwrap().force_stop() {
                     Self::add_to_buf(buffer, "Command interrupted!\n", hide_stdout);
                     break;
                 }
@@ -281,7 +282,7 @@ impl App {
                     thread::sleep(Duration::from_millis(delay));
                 }
             }
-            *running.lock().unwrap() = ActionStatus::Stopped;
+            *exec_status.lock().unwrap() = ActionStatus::Stopped;
         });
 
         Ok(())
@@ -296,6 +297,9 @@ impl App {
         hide_stderr: bool,
         loop_config: LoopConfig,
     ) -> io::Result<()> {
+        let exec_status = self.action_status.clone();
+        *exec_status.lock().unwrap() = ActionStatus::Running;
+
         let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap());
         let prompt = Self::get_prompt(
             sudo.clone(),
@@ -305,8 +309,6 @@ impl App {
         self.write_buf(format!("{} {}\n", prompt, cmd), None);
 
         let cmd = Self::get_sudo_command(cmd, sudo);
-        let running = self.action_status.clone();
-        *running.lock().unwrap() = ActionStatus::Running;
         let buffer = self.buffer.clone();
         thread::spawn(move || {
             let tcp = TcpStream::connect(addr).unwrap();
@@ -324,7 +326,7 @@ impl App {
             let times = loop_config.times;
             let delay = loop_config.delay.unwrap();
             for repetition in 0..times {
-                if running.lock().unwrap().force_stop() {
+                if exec_status.lock().unwrap().force_stop() {
                     Self::add_to_buf(buffer, "Command interrupted!\n", hide_stdout);
                     break;
                 }
@@ -344,7 +346,7 @@ impl App {
                     thread::sleep(Duration::from_millis(delay));
                 }
             }
-            *running.lock().unwrap() = ActionStatus::Stopped;
+            *exec_status.lock().unwrap() = ActionStatus::Stopped;
         });
 
         Ok(())
