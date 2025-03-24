@@ -29,6 +29,13 @@ impl StyleConfig {
         title.color = Some(String::from("white"));
         title
     }
+
+    pub fn error() -> Self {
+        let mut title = StyleConfig::default();
+        title.bold = Some(true);
+        title.color = Some(String::from("red"));
+        title
+    }
 }
 
 impl Into<Style> for StyleConfig {

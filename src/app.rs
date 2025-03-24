@@ -3,25 +3,22 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::config::{self, CommandType, LoopConfig, RemoteConfig, StyleConfig, SudoConfig};
-use anyhow::{Context, Result};
+use crate::session::CommandSession;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     style::{Color, Style, Styled},
     text::{Line, Span},
 };
-use ssh2::Session;
 use std::{
-    env, error,
-    io::{self, Read},
-    net::TcpStream,
-    process::Command,
+    error,
+    io::self,
     sync::{Arc, Mutex},
     thread,
     time::Duration,
 };
 
 /// Application result type.
-pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
+pub type AppResult<T> = Result<T, Box<dyn error::Error>>;
 
 #[derive(Clone, Debug)]
 pub struct BufferedOutput {
@@ -103,7 +100,7 @@ impl App {
         self.buffer.lock().unwrap().push(BufferedOutput {
             text: format!(
                 "### {} ###",
-                self.config.stages[self.stage_idx].name.clone()
+                self.config.stages[self.stage_idx].name
             )
             .into(),
             style: StyleConfig::title(),
@@ -194,24 +191,14 @@ impl App {
                 remote,
                 r#loop,
             } => {
-                if let Some(remote_config) = remote {
-                    self.run_remote_command(
-                        &command,
-                        remote_config,
-                        sudo,
-                        hide_stdout.unwrap(),
-                        hide_stderr.unwrap(),
-                        r#loop.unwrap(),
-                    )
-                } else {
-                    self.run_local_command(
-                        &command,
-                        sudo,
-                        hide_stdout.unwrap(),
-                        hide_stderr.unwrap(),
-                        r#loop.unwrap(),
-                    )
-                }?;
+                self.run_command(
+                    command,
+                    remote,
+                    sudo,
+                    hide_stdout.unwrap(),
+                    hide_stderr.unwrap(),
+                    r#loop.unwrap(),
+                )?;
             }
         };
         self.next_action_idx();
@@ -239,9 +226,10 @@ impl App {
         });
     }
 
-    fn run_local_command(
+    fn run_command(
         &mut self,
-        command: &CommandType,
+        command: CommandType,
+        remote: Option<RemoteConfig>,
         sudo: Option<SudoConfig>,
         hide_stdout: bool,
         hide_stderr: bool,
@@ -250,14 +238,27 @@ impl App {
         let exec_status = self.action_status.clone();
         *exec_status.lock().unwrap() = ActionStatus::Running;
 
-        let prompt = Self::get_prompt(
-            sudo.clone(),
-            &whoami::username(),
-            &whoami::fallible::hostname()?);
+        let mut command_session = match CommandSession::new(remote, sudo) {
+            Ok(command_session) => command_session,
+            Err(e) => {
+                self.write_buf(
+                    format!(
+                        "Failed to initialize a new session for command '{}' error: {}",
+                        command.get_command(),
+                        e
+                    ),
+                    Some(StyleConfig::error()),
+                );
+                *exec_status.lock().unwrap() = ActionStatus::Stopped;
+                return Ok(());
+            }
+        };
+
+        let prompt = command_session.get_prompt()?;
+
         let cmd = command.get_command();
         self.write_buf(format!("{} {}\n", prompt, cmd), None);
 
-        let cmd = Self::get_sudo_command(cmd, sudo);
         let buffer = self.buffer.clone();
         thread::spawn(move || {
             let times = loop_config.times;
@@ -268,79 +269,13 @@ impl App {
                     break;
                 }
 
-                let output = Command::new("sh")
-                    .arg("-c")
-                    .arg(cmd.clone())
-                    .output()
-                    .context("Failed to execute command")
-                    .unwrap();
-
-                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stdout), hide_stdout);
-                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&output.stderr), hide_stderr);
-
-                if delay > 0 && repetition != times - 1 {
-                    thread::sleep(Duration::from_millis(delay));
-                }
-            }
-            *exec_status.lock().unwrap() = ActionStatus::Stopped;
-        });
-
-        Ok(())
-    }
-
-    fn run_remote_command(
-        &mut self,
-        command: &CommandType,
-        remote_config: RemoteConfig,
-        sudo: Option<SudoConfig>,
-        hide_stdout: bool,
-        hide_stderr: bool,
-        loop_config: LoopConfig,
-    ) -> io::Result<()> {
-        let exec_status = self.action_status.clone();
-        *exec_status.lock().unwrap() = ActionStatus::Running;
-
-        let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap());
-        let prompt = Self::get_prompt(
-            sudo.clone(),
-            &remote_config.user,
-            &addr);
-        let cmd = command.get_command();
-        self.write_buf(format!("{} {}\n", prompt, cmd), None);
-
-        let cmd = Self::get_sudo_command(cmd, sudo);
-        let buffer = self.buffer.clone();
-        thread::spawn(move || {
-            let tcp = TcpStream::connect(addr).unwrap();
-            let mut session = Session::new().unwrap();
-            session.set_tcp_stream(tcp);
-            session.handshake().unwrap();
-
-            let password = Self::resolve_env(&remote_config.password.unwrap()).unwrap();
-            session.userauth_password(&remote_config.user, &password).unwrap();
-
-            if !session.authenticated() {
-                return;
-            }
-
-            let times = loop_config.times;
-            let delay = loop_config.delay.unwrap();
-            for repetition in 0..times {
-                if exec_status.lock().unwrap().force_stop() {
-                    Self::add_to_buf(buffer, "Command interrupted!\n", hide_stdout);
-                    break;
-                }
-
-                let mut channel = session.channel_session().unwrap();
-                channel.exec(cmd.as_str()).unwrap();
-
-                let mut stdout: Vec<u8> = Vec::new();
-                channel.read_to_end(&mut stdout).unwrap();
-                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&stdout), hide_stdout);
-
-                let mut stderr: Vec<u8> = Vec::new();
-                channel.stderr().read_to_end(&mut stderr).unwrap();
-                Self::add_to_buf(buffer.clone(), &String::from_utf8_lossy(&stderr), hide_stderr);
+                command_session.run_command(cmd.clone()).unwrap();
+                Self::add_to_buf(buffer.clone(),
+                                 &command_session.get_stdout(),
+                                 hide_stdout);
+                Self::add_to_buf(buffer.clone(),
+                                 &command_session.get_stderr(),
+                                 hide_stderr);
 
                 if delay > 0 && repetition != times - 1 {
                     thread::sleep(Duration::from_millis(delay));
@@ -371,36 +306,7 @@ impl App {
         }
     }
 
-    fn resolve_env(value: &str) -> Result<String> {
-        if value.starts_with("$env:") {
-            let env_var = &value[5..];
-            env::var(env_var).with_context(|| format!("Missing environment variable: {}", env_var))
-        } else {
-            Ok(value.to_string())
-        }
-    }
-
     fn exit(&mut self) {
         self.running = false;
-    }
-
-    fn get_prompt(sudo: Option<SudoConfig>, effective_user: &String, host: &String) -> String {
-        let (user, prompt_char)  = if let Some(sudo_config) = sudo {
-            (&sudo_config.user.unwrap(), '#')
-        } else {
-            (effective_user, '$')
-        };
-
-        format!("[{}@{}]{}", user, host, prompt_char)
-    }
-
-    fn get_sudo_command(cmd: String, sudo: Option<SudoConfig>) -> String {
-        if let Some(sudo_config) = sudo {
-            let user = sudo_config.user.unwrap();
-            let password = Self::resolve_env(&sudo_config.password.unwrap()).unwrap();
-            format!("echo {} | sudo -kS -u {} -p '' {}", password, user, cmd)
-        } else {
-            cmd
-        }
     }
 }
