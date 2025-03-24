@@ -111,6 +111,8 @@ pub enum Action {
         #[serde(skip_serializing_if = "Option::is_none", default = "Action::stderr_default")]
         hide_stderr: Option<bool>,
         #[serde(skip_serializing_if = "Option::is_none")]
+        style: Option<StyleConfig>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         remote: Option<RemoteConfig>,
         #[serde(skip_serializing_if = "Option::is_none", default = "Action::loop_config_default")]
         r#loop: Option<LoopConfig>,
