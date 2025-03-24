@@ -7,6 +7,7 @@ mod config;
 mod event;
 mod tui;
 mod ui;
+mod session;
 
 use clap::Parser;
 use ratatui::{backend::CrosstermBackend, Terminal};
