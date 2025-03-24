@@ -67,6 +67,9 @@ stages:
 
       - type: command
         command: "echo 'Deploying services...'"
+        style:
+          color: "yellow"
+          italic: true
 
       - type: command
         command:

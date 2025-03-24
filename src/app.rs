@@ -188,6 +188,7 @@ impl App {
                 sudo,
                 hide_stdout,
                 hide_stderr,
+                style,
                 remote,
                 r#loop,
             } => {
@@ -197,6 +198,7 @@ impl App {
                     sudo,
                     hide_stdout.unwrap(),
                     hide_stderr.unwrap(),
+                    style,
                     r#loop.unwrap(),
                 )?;
             }
@@ -233,6 +235,7 @@ impl App {
         sudo: Option<SudoConfig>,
         hide_stdout: bool,
         hide_stderr: bool,
+        style: Option<StyleConfig>,
         loop_config: LoopConfig,
     ) -> io::Result<()> {
         let exec_status = self.action_status.clone();
@@ -257,7 +260,7 @@ impl App {
         let prompt = command_session.get_prompt()?;
 
         let cmd = command.get_command();
-        self.write_buf(format!("{} {}\n", prompt, cmd), None);
+        self.write_buf(format!("{} {}\n", prompt, cmd), style);
 
         let buffer = self.buffer.clone();
         thread::spawn(move || {
