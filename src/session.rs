@@ -113,9 +113,9 @@ impl CommandSession {
     fn resolve_remote_config(remote_config: RemoteConfig) -> Result<RemoteConfig> {
         Ok(
             RemoteConfig {
-                host: remote_config.host,
+                host: Self::resolve_env_str(remote_config.host)?,
                 port: remote_config.port,
-                user: remote_config.user,
+                user: Self::resolve_env_str(remote_config.user)?,
                 password: Self::resolve_env_opt(remote_config.password)?,
             }
         )
@@ -124,7 +124,7 @@ impl CommandSession {
     fn resolve_sudo_config(sudo_config: SudoConfig) -> Result<SudoConfig> {
         Ok(
             SudoConfig {
-                user: sudo_config.user,
+                user: Self::resolve_env_opt(sudo_config.user)?,
                 password: Self::resolve_env_opt(sudo_config.password)?,
             }
         )
