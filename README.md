@@ -17,7 +17,10 @@ and styled terminal output.
   - Run as regular or privileged user
   - Support list of commands
 - Support environment variables
+  - Remote connection host
+  - Remote connection user
   - Remote connection password
+  - Remote sudo user
   - Remote sudo password
 - Loops with configurable delay
 - Hide commands' output (`stdout` and/or `stderr`) for silent execution
@@ -90,16 +93,16 @@ stages:
           user: root
           password: root1234
 
-      # Environment variables support (security).
+      # Environment variables support (security & usability).
       - type: command
         command: config_collector.sh 1.1.1.1
         remote:
-          user: admin
-          host: server.com
+          user: $env:REMOTE_USER
+          host: $env:REMOTE_HOST
           port: 22
           password: $env:REMOTE_PASSWORD
         sudo:
-          user: root
+          user: $env:REMOTE_SUDO_USER
           password: $env:REMOTE_SUDO_PASSWORD
 
       # Local execution in a loop.

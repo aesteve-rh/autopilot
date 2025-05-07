@@ -264,7 +264,7 @@ Must be one of:
 
 | Property                                                 | Pattern | Type   | Deprecated | Definition | Title/Description                                                                                    |
 |----------------------------------------------------------|---------|--------|------------|------------|------------------------------------------------------------------------------------------------------|
-| - [user](#stages_items_actions_items_sudo_user )         | No      | string | No         | -          | Privileged user (default `root`)                                                                     |
+| - [user](#stages_items_actions_items_sudo_user )         | No      | string | No         | -          | Privileged user (default `root`). Can use `$env:` prefix to mark value as environment variable       |
 | - [password](#stages_items_actions_items_sudo_password ) | No      | string | No         | -          | Privileged password (empty by default). Can use `$env:` prefix to mark value as environment variable |
 
 ###### <a name="stages_items_actions_items_sudo_user"></a>1.1.2.1.8.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo > user`
@@ -274,7 +274,7 @@ Must be one of:
 | **Type**     | `string` |
 | **Required** | No       |
 
-**Description:** Privileged user (default `root`)
+**Description:** Privileged user (default `root`). Can use `$env:` prefix to mark value as environment variable
 
 ###### <a name="stages_items_actions_items_sudo_password"></a>1.1.2.1.8.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo > password`
 
@@ -311,11 +311,11 @@ Must be one of:
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
-| Property                                                   | Pattern | Type    | Deprecated | Definition | Title/Description                                                                                    |
-|------------------------------------------------------------|---------|---------|------------|------------|------------------------------------------------------------------------------------------------------|
-| + [host](#stages_items_actions_items_remote_host )         | No      | string  | No         | -          | Remote SSH host                                                                                      |
-| - [port](#stages_items_actions_items_remote_port )         | No      | integer | No         | -          | Remote SSH port (default `22`)                                                                       |
-| + [user](#stages_items_actions_items_remote_user )         | No      | string  | No         | -          | Remote SSH user                                                                                      |
+| Property                                                   | Pattern | Type    | Deprecated | Definition | Title/Description                                                                                           |
+|------------------------------------------------------------|---------|---------|------------|------------|-------------------------------------------------------------------------------------------------------------|
+| + [host](#stages_items_actions_items_remote_host )         | No      | string  | No         | -          | Remote SSH host. Can use `$env:` prefix to mark value as environment variable                               |
+| - [port](#stages_items_actions_items_remote_port )         | No      | integer | No         | -          | Remote SSH port (default `22`)                                                                              |
+| + [user](#stages_items_actions_items_remote_user )         | No      | string  | No         | -          | Remote SSH user. Can use `$env:` prefix to mark value as environment variable                               |
 | - [password](#stages_items_actions_items_remote_password ) | No      | string  | No         | -          | Remote SSH password (empty by default). Can use `$env:` prefix to mark value as environment variable |
 
 ###### <a name="stages_items_actions_items_remote_host"></a>1.1.2.1.11.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > host`
@@ -325,7 +325,7 @@ Must be one of:
 | **Type**     | `string` |
 | **Required** | Yes      |
 
-**Description:** Remote SSH host
+**Description:** Remote SSH host. Can use `$env:` prefix to mark value as environment variable
 
 ###### <a name="stages_items_actions_items_remote_port"></a>1.1.2.1.11.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > port`
 
@@ -348,7 +348,7 @@ Must be one of:
 | **Type**     | `string` |
 | **Required** | Yes      |
 
-**Description:** Remote SSH user
+**Description:** Remote SSH user. Can use `$env:` prefix to mark value as environment variable
 
 ###### <a name="stages_items_actions_items_remote_password"></a>1.1.2.1.11.4. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > remote > password`
 
@@ -399,4 +399,4 @@ Must be one of:
 | **Minimum**  | &ge; 0 |
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-05-12 at 23:42:15 +0300
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-05-14 at 23:33:57 +0300

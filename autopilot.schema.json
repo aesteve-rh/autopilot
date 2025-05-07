@@ -66,7 +66,7 @@
                     "properties": {
                       "user": {
                         "type": "string",
-                        "description": "Privileged user (default 'root')"
+                        "description": "Privileged user (default 'root'). Can use '$env:' prefix to mark value as environment variable"
                       },
                       "password": {
                         "type": "string",
@@ -88,7 +88,7 @@
                     "properties": {
                       "host": {
                         "type": "string",
-                        "description": "Remote SSH host"
+                        "description": "Remote SSH host. Can use '$env:' prefix to mark value as environment variable"
                       },
                       "port": {
                         "type": "integer",
@@ -98,7 +98,7 @@
                       },
                       "user": {
                         "type": "string",
-                        "description": "Remote SSH user"
+                        "description": "Remote SSH user. Can use '$env:' prefix to mark value as environment variable"
                       },
                       "password": {
                         "type": "string",
