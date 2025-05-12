@@ -51,7 +51,7 @@
                   "speed": {
                     "type": "integer",
                     "minimum": 0,
-                    "description": "Typing speed in milliseconds per character (default 50)"
+                    "description": "Typing speed in milliseconds per character (default '50')"
                   },
                   "command": {
                     "type": ["string", "array"],
@@ -94,7 +94,7 @@
                         "type": "integer",
                         "minimum": 1,
                         "maximum": 65535,
-                        "description": "Remote SSH port (default 22)"
+                        "description": "Remote SSH port (default '22')"
                       },
                       "user": {
                         "type": "string",

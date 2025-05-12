@@ -16,6 +16,9 @@ and styled terminal output.
   - Local or remote (via `ssh`) execution
   - Run as regular or privileged user
   - Support list of commands
+- Support environment variables
+  - Remote connection password
+  - Remote sudo password
 - Loops with configurable delay
 - Hide commands' output (`stdout` and/or `stderr`) for silent execution
 - YAML-based, human-friendly configuration
@@ -71,20 +74,37 @@ stages:
           color: "yellow"
           italic: true
 
+      # Multiple commands support.
       - type: command
         command:
           - restart-service.sh
-          - echo 'Service restarted'
+          - echo 'Service restarted!'
         hide_stdout: true
         hide_stderr: false
+        remote:
+          user: admin
+          host: server.com
+          port: 22
+          password: admin1234
         sudo:
           user: root
-          password: admin1234
+          password: root1234
+
+      # Environment variables support (security).
+      - type: command
+        command: config_collector.sh 1.1.1.1
         remote:
-          user: user
+          user: admin
           host: server.com
           port: 22
           password: $env:REMOTE_PASSWORD
+        sudo:
+          user: root
+          password: $env:REMOTE_SUDO_PASSWORD
+
+      # Local execution in a loop.
+      - type: command
+        command: mine-bitcoin.sh
         loop:
           times: 3
           delay: 2000
@@ -111,4 +131,4 @@ includes a modern user interface to show the demos.
 
 # Contribute
 
-PRs welcome! Feel free to open issues for new features.
+PRs are welcome! Feel free to open issues for new features.

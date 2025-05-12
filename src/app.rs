@@ -248,7 +248,7 @@ impl App {
                     format!(
                         "Failed to initialize a new session for command '{}' error: {}",
                         command.get_command(),
-                        e
+                        e,
                     ),
                     Some(StyleConfig::error()),
                 );

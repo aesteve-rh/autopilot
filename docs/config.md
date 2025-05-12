@@ -118,18 +118,18 @@ SPDX-License-Identifier: GPL-3.0-or-later
 | **Required**              | No          |
 | **Additional properties** | Not allowed |
 
-| Property                                                  | Pattern | Type                      | Deprecated | Definition | Title/Description                                       |
-|-----------------------------------------------------------|---------|---------------------------|------------|------------|---------------------------------------------------------|
-| + [type](#stages_items_actions_items_type )               | No      | enum (of string)          | No         | -          | Action type: message or command                         |
-| - [text](#stages_items_actions_items_text )               | No      | string                    | No         | -          | Message text (required for message actions)             |
-| - [style](#stages_items_actions_items_style )             | No      | object                    | No         | -          | -                                                       |
-| - [speed](#stages_items_actions_items_speed )             | No      | integer                   | No         | -          | Typing speed in milliseconds per character (default 50) |
-| - [command](#stages_items_actions_items_command )         | No      | string or array of string | No         | -          | Shell command to execute (required for command actions) |
-| - [sudo](#stages_items_actions_items_sudo )               | No      | object                    | No         | -          | Run command with elevated privileges                    |
-| - [hide_stdout](#stages_items_actions_items_hide_stdout ) | No      | boolean                   | No         | -          | Hide command's stdout (default false)                   |
-| - [hide_stderr](#stages_items_actions_items_hide_stderr ) | No      | boolean                   | No         | -          | Hide command's stderr (default false)                   |
-| - [remote](#stages_items_actions_items_remote )           | No      | object                    | No         | -          | -                                                       |
-| - [loop](#stages_items_actions_items_loop )               | No      | object                    | No         | -          | -                                                       |
+| Property                                                  | Pattern | Type                      | Deprecated | Definition | Title/Description                                         |
+|-----------------------------------------------------------|---------|---------------------------|------------|------------|-----------------------------------------------------------|
+| + [type](#stages_items_actions_items_type )               | No      | enum (of string)          | No         | -          | Action type: message or command                           |
+| - [text](#stages_items_actions_items_text )               | No      | string                    | No         | -          | Message text (required for message actions)               |
+| - [style](#stages_items_actions_items_style )             | No      | object                    | No         | -          | -                                                         |
+| - [speed](#stages_items_actions_items_speed )             | No      | integer                   | No         | -          | Typing speed in milliseconds per character (default `50`) |
+| - [command](#stages_items_actions_items_command )         | No      | string or array of string | No         | -          | Shell command to execute (required for command actions)   |
+| - [sudo](#stages_items_actions_items_sudo )               | No      | object                    | No         | -          | Run command with elevated privileges                      |
+| - [hide_stdout](#stages_items_actions_items_hide_stdout ) | No      | boolean                   | No         | -          | Hide command's stdout (default false)                     |
+| - [hide_stderr](#stages_items_actions_items_hide_stderr ) | No      | boolean                   | No         | -          | Hide command's stderr (default false)                     |
+| - [remote](#stages_items_actions_items_remote )           | No      | object                    | No         | -          | -                                                         |
+| - [loop](#stages_items_actions_items_loop )               | No      | object                    | No         | -          | -                                                         |
 
 | Any of(Option)                                 |
 |------------------------------------------------|
@@ -237,7 +237,7 @@ Must be one of:
 | **Type**     | `integer` |
 | **Required** | No        |
 
-**Description:** Typing speed in milliseconds per character (default 50)
+**Description:** Typing speed in milliseconds per character (default `50`)
 
 | Restrictions |        |
 |--------------|--------|
@@ -264,7 +264,7 @@ Must be one of:
 
 | Property                                                 | Pattern | Type   | Deprecated | Definition | Title/Description                                                                                    |
 |----------------------------------------------------------|---------|--------|------------|------------|------------------------------------------------------------------------------------------------------|
-| - [user](#stages_items_actions_items_sudo_user )         | No      | string | No         | -          | Privileged user (default 'root')                                                                     |
+| - [user](#stages_items_actions_items_sudo_user )         | No      | string | No         | -          | Privileged user (default `root`)                                                                     |
 | - [password](#stages_items_actions_items_sudo_password ) | No      | string | No         | -          | Privileged password (empty by default). Can use `$env:` prefix to mark value as environment variable |
 
 ###### <a name="stages_items_actions_items_sudo_user"></a>1.1.2.1.8.1. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo > user`
@@ -274,7 +274,7 @@ Must be one of:
 | **Type**     | `string` |
 | **Required** | No       |
 
-**Description:** Privileged user (default 'root')
+**Description:** Privileged user (default `root`)
 
 ###### <a name="stages_items_actions_items_sudo_password"></a>1.1.2.1.8.2. Property `Autopilot Workflow Schema > stages > stages items > actions > actions items > sudo > password`
 
@@ -314,7 +314,7 @@ Must be one of:
 | Property                                                   | Pattern | Type    | Deprecated | Definition | Title/Description                                                                                    |
 |------------------------------------------------------------|---------|---------|------------|------------|------------------------------------------------------------------------------------------------------|
 | + [host](#stages_items_actions_items_remote_host )         | No      | string  | No         | -          | Remote SSH host                                                                                      |
-| - [port](#stages_items_actions_items_remote_port )         | No      | integer | No         | -          | Remote SSH port (default 22)                                                                         |
+| - [port](#stages_items_actions_items_remote_port )         | No      | integer | No         | -          | Remote SSH port (default `22`)                                                                       |
 | + [user](#stages_items_actions_items_remote_user )         | No      | string  | No         | -          | Remote SSH user                                                                                      |
 | - [password](#stages_items_actions_items_remote_password ) | No      | string  | No         | -          | Remote SSH password (empty by default). Can use `$env:` prefix to mark value as environment variable |
 
@@ -334,7 +334,7 @@ Must be one of:
 | **Type**     | `integer` |
 | **Required** | No        |
 
-**Description:** Remote SSH port (default 22)
+**Description:** Remote SSH port (default `22`)
 
 | Restrictions |            |
 |--------------|------------|
@@ -399,4 +399,4 @@ Must be one of:
 | **Minimum**  | &ge; 0 |
 
 ----------------------------------------------------------------------------------------------------------------------------
-Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-03-20 at 18:21:07 +0200
+Generated using [json-schema-for-humans](https://github.com/coveooss/json-schema-for-humans) on 2025-05-12 at 23:42:15 +0300

@@ -5,15 +5,14 @@
 use crate::config::{RemoteConfig, SudoConfig};
 use anyhow::Context;
 use ssh2::Session;
+use std::borrow::Cow;
 use std::{
     env,
-    io::{self, Read, Error, ErrorKind},
+    io::{self, Error, ErrorKind, Read},
     net::TcpStream,
     process::Command,
 };
-use std::borrow::Cow;
 
-#[derive(Clone)]
 enum SessionConfiguration {
     Local(),
     Remote(Session, RemoteConfig),
@@ -35,20 +34,6 @@ impl SessionConfiguration {
             },
         }
     }
-
-    fn run_command(&mut self, cmd: String) -> io::Result<(Vec<u8>, Vec<u8>)> {
-        match self {
-            SessionConfiguration::Local() => {
-                CommandSession::run_local_command("sh", cmd)
-            }
-            SessionConfiguration::Remote(session, _) => {
-                CommandSession::run_remote_command(
-                    &session,
-                    cmd,
-                )
-            }
-        }
-    }
 }
 
 pub struct CommandSession {
@@ -63,7 +48,7 @@ impl CommandSession {
         Ok(
             Self {
                 session_configuration: if let Some(remote_config) = remote {
-                    SessionConfiguration::Remote(Self::init_remote_session(&remote_config)?, remote_config)
+                    Self::init_remote_session(remote_config)?
                 } else {
                     SessionConfiguration::Local()
                 },
@@ -81,7 +66,14 @@ impl CommandSession {
             (&self.session_configuration.get_effective_user(), '$')
         };
 
-        Ok(format!("[{}@{}]{}", user, self.session_configuration.get_host()?, prompt_char))
+        Ok(
+            format!(
+                "[{}@{}]{}",
+                user,
+                self.session_configuration.get_host()?,
+                prompt_char,
+            )
+        )
     }
 
     pub(crate) fn get_stdout(&self) -> Cow<'_, str> {
@@ -93,7 +85,16 @@ impl CommandSession {
     }
 
     pub(crate) fn run_command(&mut self, cmd: String) -> io::Result<()> {
-        (self.stdout, self.stderr) = self.session_configuration.run_command(self.get_sudo_command(cmd))?;
+        let cmd = self.get_sudo_command(cmd);
+        (self.stdout, self.stderr) = match &self.session_configuration {
+            SessionConfiguration::Local() => {
+                Self::run_local_command("sh", cmd)?
+            }
+            SessionConfiguration::Remote(session, _) => {
+                Self::run_remote_command(session, cmd)?
+            }
+        };
+
         Ok(())
     }
 
@@ -109,7 +110,7 @@ impl CommandSession {
         Ok((output.stdout, output.stderr))
     }
 
-    fn init_remote_session(remote_config: &RemoteConfig) -> io::Result<Session> {
+    fn init_remote_session(remote_config: RemoteConfig) -> io::Result<SessionConfiguration> {
         let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap());
         let tcp = TcpStream::connect(addr)?;
         let mut session = Session::new()?;
@@ -124,7 +125,7 @@ impl CommandSession {
             return Err(Error::from(ErrorKind::ConnectionRefused));
         }
 
-        Ok(session)
+        Ok(SessionConfiguration::Remote(session, remote_config))
     }
 
     fn run_remote_command(session: &Session, cmd: String) -> io::Result<(Vec<u8>, Vec<u8>)> {
