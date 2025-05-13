@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::config::{RemoteConfig, SudoConfig};
-use anyhow::Context;
+use anyhow::{ensure, Context, Result};
 use ssh2::Session;
 use std::borrow::Cow;
 use std::{
     env,
-    io::{self, Error, ErrorKind, Read},
+    io::Read,
     net::TcpStream,
     process::Command,
 };
@@ -26,7 +26,7 @@ impl SessionConfiguration {
         }
     }
 
-    fn get_host(&self) -> io::Result<String> {
+    fn get_host(&self) -> Result<String> {
         match self {
             SessionConfiguration::Local() => Ok(whoami::fallible::hostname()?),
             SessionConfiguration::Remote(_, remote_config) => {
@@ -44,7 +44,7 @@ pub struct CommandSession {
 }
 
 impl CommandSession {
-    pub(crate) fn new(remote: Option<RemoteConfig>, sudo: Option<SudoConfig>) -> io::Result<Self> {
+    pub(crate) fn new(remote: Option<RemoteConfig>, sudo: Option<SudoConfig>) -> Result<Self> {
         Ok(
             Self {
                 session_configuration: if let Some(remote_config) = remote {
@@ -59,7 +59,7 @@ impl CommandSession {
         )
     }
 
-    pub(crate) fn get_prompt(&self) -> io::Result<String> {
+    pub(crate) fn get_prompt(&self) -> Result<String> {
         let (user, prompt_char)  = if let Some(sudo_config) = &self.sudo {
             (sudo_config.user.as_ref().unwrap(), '#')
         } else {
@@ -84,7 +84,7 @@ impl CommandSession {
         String::from_utf8_lossy(&self.stderr)
     }
 
-    pub(crate) fn run_command(&mut self, cmd: String) -> io::Result<()> {
+    pub(crate) fn run_command(&mut self, cmd: String) -> Result<()> {
         let cmd = self.get_sudo_command(cmd);
         (self.stdout, self.stderr) = match &self.session_configuration {
             SessionConfiguration::Local() => {
@@ -97,38 +97,33 @@ impl CommandSession {
 
         Ok(())
     }
+    
 
-    fn run_local_command(shell: &str, cmd: String) -> io::Result<(Vec<u8>, Vec<u8>)> {
+    fn run_local_command(shell: &str, cmd: String) -> Result<(Vec<u8>, Vec<u8>)> {
         let output = Command::new(shell)
             .arg("-c")
             .arg(cmd)
             .output()
-            .context("Failed to execute command")
-            // TODO: improve error handling
-            .unwrap();
+            .context("Failed to execute a local command")?;
 
         Ok((output.stdout, output.stderr))
     }
 
-    fn init_remote_session(remote_config: RemoteConfig) -> io::Result<SessionConfiguration> {
+    fn init_remote_session(remote_config: RemoteConfig) -> Result<SessionConfiguration> {
         let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap());
         let tcp = TcpStream::connect(addr)?;
         let mut session = Session::new()?;
         session.set_tcp_stream(tcp);
         session.handshake()?;
 
-        // TODO: improve error handling
-        let password = Self::resolve_env(remote_config.password.as_ref()).unwrap();
+        let password = Self::resolve_env(remote_config.password.as_ref())?;
         session.userauth_password(&remote_config.user, &password)?;
-
-        if !session.authenticated() {
-            return Err(Error::from(ErrorKind::ConnectionRefused));
-        }
+        ensure!(session.authenticated(), "Session password authentication failed");
 
         Ok(SessionConfiguration::Remote(session, remote_config))
     }
 
-    fn run_remote_command(session: &Session, cmd: String) -> io::Result<(Vec<u8>, Vec<u8>)> {
+    fn run_remote_command(session: &Session, cmd: String) -> Result<(Vec<u8>, Vec<u8>)> {
         let mut channel = session.channel_session()?;
         channel.exec(cmd.as_str())?;
 
@@ -141,11 +136,11 @@ impl CommandSession {
         Ok((stdout, stderr))
     }
 
-    fn resolve_env(password: Option<&String>) -> anyhow::Result<String> {
+    fn resolve_env(password: Option<&String>) -> Result<String> {
         let value = password.unwrap();
         if value.starts_with("$env:") {
             let env_var = &value[5..];
-            env::var(env_var).with_context(|| format!("Missing environment variable: {}", env_var))
+            env::var(env_var).with_context(|| format!("Missing environment variable: '{}'", env_var))
         } else {
             Ok(value.to_string())
         }
