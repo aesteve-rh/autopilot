@@ -4,6 +4,7 @@
 
 use crate::config::{self, CommandType, LoopConfig, RemoteConfig, StyleConfig, SudoConfig};
 use crate::session::CommandSession;
+use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     style::{Color, Style, Styled},
@@ -11,7 +12,6 @@ use ratatui::{
 };
 use std::{
     error,
-    io::self,
     sync::{Arc, Mutex},
     thread,
     time::Duration,
@@ -108,7 +108,7 @@ impl App {
     }
 
     /// updates the application's state based on user input
-    pub fn handle_events(&mut self, key_event: KeyEvent) -> io::Result<()> {
+    pub fn handle_events(&mut self, key_event: KeyEvent) -> Result<()> {
         Ok(match key_event.code {
             KeyCode::Char('q') | KeyCode::Char('Q') => self.exit(),
             KeyCode::Left => self.prev_action(),
@@ -168,7 +168,7 @@ impl App {
         self.buffer.lock().unwrap().pop();
     }
 
-    fn next_action(&mut self) -> io::Result<()> {
+    fn next_action(&mut self) -> Result<()> {
         if *self.action_status.lock().unwrap() == ActionStatus::Running {
             *self.action_status.lock().unwrap() = ActionStatus::Forced;
             return Ok(());
@@ -237,7 +237,7 @@ impl App {
         hide_stderr: bool,
         style: Option<StyleConfig>,
         loop_config: LoopConfig,
-    ) -> io::Result<()> {
+    ) -> Result<()> {
         let exec_status = self.action_status.clone();
         *exec_status.lock().unwrap() = ActionStatus::Running;
 
@@ -246,7 +246,7 @@ impl App {
             Err(e) => {
                 self.write_buf(
                     format!(
-                        "Failed to initialize a new session for command '{}' error: {}",
+                        "Failed to initialize a new session.\n\tCommand: {}\n\tError:   {}",
                         command.get_command(),
                         e,
                     ),
