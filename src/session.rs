@@ -48,11 +48,13 @@ impl CommandSession {
         Ok(
             Self {
                 session_configuration: if let Some(remote_config) = remote {
-                    Self::init_remote_session(remote_config)?
+                    Self::init_remote_session(Self::resolve_remote_config(remote_config)?)?
                 } else {
                     SessionConfiguration::Local()
                 },
-                sudo,
+                sudo: sudo
+                    .map(|sudo_config| Self::resolve_sudo_config(sudo_config))
+                    .transpose()?,
                 stdout: Vec::new(),
                 stderr: Vec::new(),
             }
@@ -97,7 +99,6 @@ impl CommandSession {
 
         Ok(())
     }
-    
 
     fn run_local_command(shell: &str, cmd: String) -> Result<(Vec<u8>, Vec<u8>)> {
         let output = Command::new(shell)
@@ -109,6 +110,26 @@ impl CommandSession {
         Ok((output.stdout, output.stderr))
     }
 
+    fn resolve_remote_config(remote_config: RemoteConfig) -> Result<RemoteConfig> {
+        Ok(
+            RemoteConfig {
+                host: remote_config.host,
+                port: remote_config.port,
+                user: remote_config.user,
+                password: Self::resolve_env_opt(remote_config.password)?,
+            }
+        )
+    }
+
+    fn resolve_sudo_config(sudo_config: SudoConfig) -> Result<SudoConfig> {
+        Ok(
+            SudoConfig {
+                user: sudo_config.user,
+                password: Self::resolve_env_opt(sudo_config.password)?,
+            }
+        )
+    }
+
     fn init_remote_session(remote_config: RemoteConfig) -> Result<SessionConfiguration> {
         let addr = format!("{}:{}", remote_config.host, remote_config.port.unwrap());
         let tcp = TcpStream::connect(addr)?;
@@ -116,8 +137,7 @@ impl CommandSession {
         session.set_tcp_stream(tcp);
         session.handshake()?;
 
-        let password = Self::resolve_env(remote_config.password.as_ref())?;
-        session.userauth_password(&remote_config.user, &password)?;
+        session.userauth_password(&remote_config.user, remote_config.password.as_ref().unwrap())?;
         ensure!(session.authenticated(), "Session password authentication failed");
 
         Ok(SessionConfiguration::Remote(session, remote_config))
@@ -136,21 +156,29 @@ impl CommandSession {
         Ok((stdout, stderr))
     }
 
-    fn resolve_env(password: Option<&String>) -> Result<String> {
-        let value = password.unwrap();
+    fn resolve_env_str(value: String) -> Result<String> {
         if value.starts_with("$env:") {
             let env_var = &value[5..];
             env::var(env_var).with_context(|| format!("Missing environment variable: '{}'", env_var))
         } else {
-            Ok(value.to_string())
+            Ok(value)
         }
+    }
+
+    fn resolve_env_opt(value_opt: Option<String>) -> Result<Option<String>> {
+        value_opt
+            .map(|value| Self::resolve_env_str(value))
+            .transpose()
     }
 
     fn get_sudo_command(&self, cmd: String) -> String {
         if let Some(sudo_config) = &self.sudo {
-            let user = sudo_config.user.as_ref().unwrap();
-            let password = Self::resolve_env(sudo_config.password.as_ref()).unwrap();
-            format!("echo {} | sudo -kS -u {} -p '' {}", password, user, cmd)
+            format!(
+                "echo {} | sudo -kS -u {} -p '' {}",
+                sudo_config.password.as_ref().unwrap(),
+                sudo_config.user.as_ref().unwrap(),
+                cmd,
+            )
         } else {
             cmd
         }
