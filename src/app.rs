@@ -241,7 +241,7 @@ impl App {
         let exec_status = self.action_status.clone();
         *exec_status.lock().unwrap() = ActionStatus::Running;
 
-        let mut command_session = match CommandSession::new(remote, sudo) {
+        let mut command_session = match CommandSession::new(&command, remote, sudo) {
             Ok(command_session) => command_session,
             Err(e) => {
                 self.write_buf(
@@ -257,10 +257,7 @@ impl App {
             }
         };
 
-        let prompt = command_session.get_prompt()?;
-
-        let cmd = command.get_command();
-        self.write_buf(format!("{} {}\n", prompt, cmd), style);
+        self.write_buf(command_session.get_prompt()?, style);
 
         let buffer = self.buffer.clone();
         thread::spawn(move || {
@@ -272,7 +269,7 @@ impl App {
                     break;
                 }
 
-                command_session.run_command(cmd.clone()).unwrap();
+                command_session.run_command().unwrap();
                 Self::add_to_buf(buffer.clone(),
                                  &command_session.get_stdout(),
                                  hide_stdout);

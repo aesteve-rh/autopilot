@@ -17,6 +17,7 @@ and styled terminal output.
   - Run as regular or privileged user
   - Support list of commands
 - Support environment variables
+  - Inside commands
   - Remote connection host
   - Remote connection user
   - Remote connection password
@@ -95,7 +96,7 @@ stages:
 
       # Environment variables support (security & usability).
       - type: command
-        command: config_collector.sh 1.1.1.1
+        command: config_collector.sh $env:GRAFANA_IP
         remote:
           user: $env:REMOTE_USER
           host: $env:REMOTE_HOST

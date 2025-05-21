@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use crate::config::{RemoteConfig, SudoConfig};
+use crate::config::{CommandType, RemoteConfig, SudoConfig};
 use anyhow::{ensure, Context, Result};
 use ssh2::Session;
 use std::borrow::Cow;
@@ -37,6 +37,7 @@ impl SessionConfiguration {
 }
 
 pub struct CommandSession {
+    command: String,
     session_configuration: SessionConfiguration,
     sudo: Option<SudoConfig>,
     stdout: Vec<u8>,
@@ -44,9 +45,14 @@ pub struct CommandSession {
 }
 
 impl CommandSession {
-    pub(crate) fn new(remote: Option<RemoteConfig>, sudo: Option<SudoConfig>) -> Result<Self> {
+    pub(crate) fn new(
+        command: &CommandType,
+        remote: Option<RemoteConfig>,
+        sudo: Option<SudoConfig>,
+    ) -> Result<Self> {
         Ok(
             Self {
+                command: Self::resolve_command(command)?,
                 session_configuration: if let Some(remote_config) = remote {
                     Self::init_remote_session(Self::resolve_remote_config(remote_config)?)?
                 } else {
@@ -70,10 +76,11 @@ impl CommandSession {
 
         Ok(
             format!(
-                "[{}@{}]{}",
+                "[{}@{}]{} {}\n",
                 user,
                 self.session_configuration.get_host()?,
                 prompt_char,
+                self.command,
             )
         )
     }
@@ -86,8 +93,8 @@ impl CommandSession {
         String::from_utf8_lossy(&self.stderr)
     }
 
-    pub(crate) fn run_command(&mut self, cmd: String) -> Result<()> {
-        let cmd = self.get_sudo_command(cmd);
+    pub(crate) fn run_command(&mut self) -> Result<()> {
+        let cmd = self.get_sudo_command();
         (self.stdout, self.stderr) = match &self.session_configuration {
             SessionConfiguration::Local() => {
                 Self::run_local_command("sh", cmd)?
@@ -171,16 +178,25 @@ impl CommandSession {
             .transpose()
     }
 
-    fn get_sudo_command(&self, cmd: String) -> String {
+    fn resolve_command(command: &CommandType) -> Result<String> {
+        let mut cmd_parts_resolved = Vec::new();
+        for s in command.get_command().split_whitespace() {
+            cmd_parts_resolved.push(Self::resolve_env_str(s.to_string())?);
+        }
+
+        Ok(cmd_parts_resolved.join(" "))
+    }
+
+    fn get_sudo_command(&self) -> String {
         if let Some(sudo_config) = &self.sudo {
             format!(
                 "echo {} | sudo -kS -u {} -p '' {}",
                 sudo_config.password.as_ref().unwrap(),
                 sudo_config.user.as_ref().unwrap(),
-                cmd,
+                self.command,
             )
         } else {
-            cmd
+            self.command.clone()
         }
     }
 }
